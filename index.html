@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Clickjacking Vulnerability Tester | Frame &amp; Overlay Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #101820 0%, #1b2a3a 100%);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #e0e8f0;
+    }
+
+    .card {
+      max-width: 1000px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 2.5rem;
+      padding: 2.2rem 2rem;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5);
+      transition: all 0.2s ease;
+    }
+
+    h1 {
+      font-weight: 600;
+      font-size: 2rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(120deg, #b3e0ff, #9ac9ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: #9aaec9;
+      margin-bottom: 2rem;
+      border-left: 4px solid #4d7aff;
+      padding-left: 1.1rem;
+      font-weight: 400;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.8rem;
+    }
+
+    @media (max-width: 650px) {
+      .input-grid {
+        grid-template-columns: 1fr;
+      }
+      .card {
+        padding: 1.8rem 1.2rem;
+      }
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 600;
+      color: #b0c7e0;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    label i {
+      font-style: normal;
+      font-size: 1rem;
+    }
+
+    input {
+      background: rgba(10, 20, 30, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 1rem;
+      padding: 0.8rem 1.1rem;
+      font-size: 0.95rem;
+      color: #eef5ff;
+      outline: none;
+      transition: all 0.2s;
+      backdrop-filter: blur(5px);
+      font-family: 'Fira Code', 'Courier New', monospace;
+    }
+
+    input:focus {
+      border-color: #4d7aff;
+      box-shadow: 0 0 0 3px rgba(77, 122, 255, 0.25);
+      background: rgba(15, 28, 42, 0.8);
+    }
+
+    .button-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+      align-items: center;
+    }
+
+    .btn {
+      background: #1e2e44;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: white;
+      font-weight: 600;
+      padding: 0.75rem 1.8rem;
+      border-radius: 2.5rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-primary {
+      background: #4d7aff;
+      border-color: #4d7aff;
+      box-shadow: 0 8px 18px rgba(77, 122, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: #3b64e6;
+      box-shadow: 0 10px 22px rgba(77, 122, 255, 0.45);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .toggle-overlay {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      background: rgba(255,255,255,0.05);
+      padding: 0.45rem 1.2rem;
+      border-radius: 2rem;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .toggle-overlay input {
+      transform: scale(1.1);
+      accent-color: #ff7b42;
+    }
+
+    .frame-container {
+      position: relative;
+      width: 100%;
+      height: 520px;
+      border-radius: 1.4rem;
+      overflow: hidden;
+      background: #0a121f;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      margin: 1.6rem 0 1rem;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      background: #ffffff; /* visible if page loads */
+    }
+
+    .overlay-attack {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+      background: rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(0.5px);
+    }
+
+    .overlay-attack.active {
+      display: block;
+      pointer-events: auto;
+    }
+
+    .fake-button {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ff4747;
+      color: white;
+      font-weight: bold;
+      font-size: 1.3rem;
+      padding: 1.2rem 2.5rem;
+      border-radius: 4rem;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.6);
+      cursor: pointer;
+      text-align: center;
+      letter-spacing: 0.4px;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.3);
+      transition: 0.2s;
+    }
+
+    .fake-button:hover {
+      background: #e63946;
+      transform: translate(-50%, -50%) scale(1.03);
+    }
+
+    .message-box {
+      background: rgba(10, 20, 30, 0.7);
+      border-radius: 1rem;
+      padding: 1rem 1.4rem;
+      margin: 1rem 0;
+      border-left: 5px solid #ffaa33;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.7rem;
+      backdrop-filter: blur(8px);
+    }
+
+    .warning-icon {
+      font-size: 1.4rem;
+    }
+
+    .vulnerable {
+      border-left-color: #ff4d4d;
+      background: rgba(255, 70, 70, 0.08);
+    }
+
+    .safe {
+      border-left-color: #2ecc71;
+      background: rgba(46, 204, 113, 0.06);
+    }
+
+    hr {
+      border-color: rgba(255,255,255,0.1);
+      margin: 1.8rem 0 1rem;
+    }
+
+    .footer-note {
+      font-size: 0.8rem;
+      color: #8899bb;
+      text-align: center;
+      margin-top: 0.8rem;
+    }
+
+    .url-display {
+      background: #0d1a25;
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-family: monospace;
+      color: #9ac9ff;
+      word-break: break-all;
+      display: inline-block;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>
+      <span>🛡️</span> Clickjack Tester
+    </h1>
+    <div class="subtitle">
+      Enter two URLs: one for display, one for the iframe source. <br>Watch for framing &amp; simulate an overlay attack.
+    </div>
+
+    <div class="input-grid">
+      <div class="input-group">
+        <label><i>🏷️</i> Display URL</label>
+        <input type="url" id="displayUrl" placeholder="https://example.com" value="https://report.insight.gov.in/reporting-webapp/portal/homePage">
+      </div>
+      <div class="input-group">
+        <label><i>🔗</i> Iframe Source URL</label>
+        <input type="url" id="iframeUrl" placeholder="https://example.com" value="https://report.insight.gov.in/reporting-webapp/portal/homePage">
+      </div>
+    </div>
+
+    <div class="button-bar">
+      <button class="btn btn-primary" id="testBtn">🔍 Test framing</button>
+      <button class="btn btn-outline" id="resetBtn">↺ Reset</button>
+      <div class="toggle-overlay">
+        <label for="overlayToggle" style="font-size:0.85rem; cursor:pointer; color:#ccc;">🎭 Overlay attack</label>
+        <input type="checkbox" id="overlayToggle">
+      </div>
+    </div>
+
+    <div id="statusMessage" class="message-box">
+      <span class="warning-icon">ℹ️</span>
+      <span id="statusText">Enter URLs and click <strong>Test framing</strong>. If the site loads inside the frame, it may be vulnerable to clickjacking.</span>
+    </div>
+
+    <div class="frame-container" id="frameWrapper">
+      <iframe id="testFrame" src="about:blank" title="Target site iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      <div id="clickjackOverlay" class="overlay-attack">
+        <div class="fake-button" id="fakeBtn">🎁 CLAIM FREE REWARD</div>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <span id="targetDisplayLabel" class="url-display">—</span>
+      <span style="font-size:0.8rem; color:#99aec9;">⚠️ If frame remains blank, X-Frame-Options or CSP may be blocking it.</span>
+    </div>
+
+    <hr>
+    <div class="footer-note">
+      🔒 This tool is for educational and authorized security testing only. Always obtain permission before testing.
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // DOM elements
+      const displayUrlInput = document.getElementById('displayUrl');
+      const iframeUrlInput = document.getElementById('iframeUrl');
+      const testBtn = document.getElementById('testBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const overlayToggle = document.getElementById('overlayToggle');
+      const overlayDiv = document.getElementById('clickjackOverlay');
+      const fakeButton = document.getElementById('fakeBtn');
+      const testFrame = document.getElementById('testFrame');
+      const statusMessageDiv = document.getElementById('statusMessage');
+      const statusText = document.getElementById('statusText');
+      const targetDisplayLabel = document.getElementById('targetDisplayLabel');
+
+      // Helper to update UI message
+      function setStatus(type, message) {
+        statusMessageDiv.className = 'message-box ' + (type || '');
+        statusText.innerHTML = message;
+      }
+
+      // Validate URL format (basic)
+      function isValidUrl(str) {
+        try {
+          const url = new URL(str);
+          return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch (_) {
+          return false;
+        }
+      }
+
+      // Load the iframe and update display
+      function performTest() {
+        const displayUrl = displayUrlInput.value.trim();
+        let iframeUrl = iframeUrlInput.value.trim();
+
+        if (!displayUrl || !iframeUrl) {
+          setStatus('', '⚠️ Please fill both URL fields.');
+          return;
+        }
+
+        // If iframeUrl is not absolute, prepend https://
+        if (!/^https?:\/\//i.test(iframeUrl)) {
+          iframeUrl = 'https://' + iframeUrl;
+          iframeUrlInput.value = iframeUrl;
+        }
+
+        if (!isValidUrl(iframeUrl)) {
+          setStatus('', '❌ Invalid iframe URL. Must be a full http/https address.');
+          return;
+        }
+
+        // Update displayed label
+        targetDisplayLabel.textContent = displayUrl.length > 45 ? displayUrl.substring(0, 45) + '…' : displayUrl;
+        targetDisplayLabel.title = displayUrl;
+
+        // Clear iframe first to reset
+        testFrame.src = 'about:blank';
+
+        // Use a slight delay to ensure about:blank is processed, then load new URL
+        setTimeout(() => {
+          testFrame.src = iframeUrl;
+
+          // Temporary status while loading
+          setStatus('', '⏳ Loading target into iframe... Observe if it appears below.');
+        }, 80);
+
+        // After a reasonable time, attempt a passive check (no cross-origin access)
+        setTimeout(() => {
+          try {
+            // Try to access contentWindow (will throw if cross-origin and no permission)
+            const frameWindow = testFrame.contentWindow;
+            if (frameWindow) {
+              // If same-origin (unlikely for external URLs), we could read document, but mostly cross-origin.
+              // We just check if the frame seems to have loaded (no error).
+              // Most browsers keep iframe blank if blocked. Visual check is primary.
+              setStatus('', '👀 <strong>Visual check:</strong> If you see the website inside the frame, it lacks proper clickjacking protection (X-Frame-Options/CSP).');
+            }
+          } catch (e) {
+            // Security error - typical for cross-origin. That doesn't mean it loaded.
+            setStatus('', '🔒 Cross-origin frame. Cannot programmatically verify. Check visually: if site is visible, it may be vulnerable. If blank, protection is active.');
+          }
+        }, 1500);
+      }
+
+      // Reset everything
+      function resetAll() {
+        displayUrlInput.value = 'https://report.insight.gov.in/reporting-webapp/portal/homePage';
+        iframeUrlInput.value = 'https://report.insight.gov.in/reporting-webapp/portal/homePage';
+        testFrame.src = 'about:blank';
+        overlayToggle.checked = false;
+        overlayDiv.classList.remove('active');
+        targetDisplayLabel.textContent = '—';
+        setStatus('', 'ℹ️ Ready. Enter target URLs and click <strong>Test framing</strong>.');
+      }
+
+      // Overlay toggle
+      overlayToggle.addEventListener('change', function(e) {
+        if (e.target.checked) {
+          // Only activate if iframe has a real src (not blank)
+          if (testFrame.src && testFrame.src !== 'about:blank') {
+            overlayDiv.classList.add('active');
+          } else {
+            alert('Please load a target URL first using "Test framing".');
+            overlayToggle.checked = false;
+          }
+        } else {
+          overlayDiv.classList.remove('active');
+        }
+      });
+
+      // Fake button click demonstration
+      fakeButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('⚠️ CLICKJACKING DEMO: You clicked the fake button!\n\nIn a real attack, this could have transferred money, changed settings, or performed any action on the real site hidden beneath.');
+        // Optionally deactivate overlay after alert
+        overlayToggle.checked = false;
+        overlayDiv.classList.remove('active');
+      });
+
+      // Event listeners
+      testBtn.addEventListener('click', performTest);
+      resetBtn.addEventListener('click', resetAll);
+
+      // Allow Enter key in inputs to trigger test
+      displayUrlInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performTest(); });
+      iframeUrlInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performTest(); });
+
+      // Initial default load? Optionally auto-test with default values for immediate demo.
+      // But user asked to have entry fields, so we keep it manual.
+      // Set initial label state
+      targetDisplayLabel.textContent = '—';
+      // The status message already shows instructions.
+    })();
+  </script>
+</body>
+</html>
