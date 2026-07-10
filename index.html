@@ -1,582 +1,1013 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Clickjacking Validator | Frame &amp; Overlay Demo</title>
-  <style>
-    /* ===== CSS Variables for Theming ===== */
-    :root {
-      --bg-gradient-start: #101820;
-      --bg-gradient-end: #1b2a3a;
-      --card-bg: rgba(255, 255, 255, 0.06);
-      --card-border: rgba(255, 255, 255, 0.12);
-      --text-color: #e0e8f0;
-      --heading-gradient-start: #b3e0ff;
-      --heading-gradient-end: #9ac9ff;
-      --subtitle-color: #9aaec9;
-      --label-color: #b0c7e0;
-      --input-bg: rgba(10, 20, 30, 0.7);
-      --input-border: rgba(255, 255, 255, 0.15);
-      --input-text: #eef5ff;
-      --btn-bg: #1e2e44;
-      --btn-border: rgba(255, 255, 255, 0.18);
-      --btn-primary-bg: #4d7aff;
-      --btn-primary-border: #4d7aff;
-      --btn-hover-bg: #3b64e6;
-      --toggle-bg: rgba(255,255,255,0.05);
-      --frame-bg: #0a121f;
-      --frame-border: rgba(255, 255, 255, 0.14);
-      --message-bg: rgba(10, 20, 30, 0.7);
-      --url-display-bg: #0d1a25;
-      --url-display-color: #9ac9ff;
-      --footer-color: #8899bb;
-      --overlay-bg: rgba(0, 0, 0, 0.15);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Clickjacking Validator</title>
+<style>
+/* ==========================================================================
+   Clickjacking Validator — single-file build
+   Token system: dark "instrument panel" default, light override available.
+   ========================================================================== */
 
-    /* Light theme class (toggled) */
-    body.light-theme {
-      --bg-gradient-start: #f5f7fa;
-      --bg-gradient-end: #d9e2ef;
-      --card-bg: rgba(255, 255, 255, 0.85);
-      --card-border: rgba(0, 0, 0, 0.1);
-      --text-color: #1a2533;
-      --heading-gradient-start: #1e3c72;
-      --heading-gradient-end: #2a5298;
-      --subtitle-color: #3b4b5e;
-      --label-color: #2c3e50;
-      --input-bg: rgba(255, 255, 255, 0.8);
-      --input-border: rgba(0, 0, 0, 0.15);
-      --input-text: #0a0f18;
-      --btn-bg: #e9edf4;
-      --btn-border: rgba(0, 0, 0, 0.18);
-      --btn-primary-bg: #2a5298;
-      --btn-primary-border: #2a5298;
-      --btn-hover-bg: #1e3c72;
-      --toggle-bg: rgba(0,0,0,0.05);
-      --frame-bg: #ffffff;
-      --frame-border: rgba(0, 0, 0, 0.2);
-      --message-bg: rgba(255, 255, 255, 0.8);
-      --url-display-bg: #eef2f7;
-      --url-display-color: #1e3c72;
-      --footer-color: #4a5c72;
-      --overlay-bg: rgba(255, 255, 255, 0.2);
-    }
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+:root{
+  --ink:#0A0E13;
+  --panel:#121821;
+  --panel-2:#171F2A;
+  --line:#232C38;
+  --text-hi:#E9EFF5;
+  --text-lo:#8592A0;
+  --accent:#5EA1FF;
+  --accent-dim:rgba(94,161,255,.14);
+  --accent-hi:#8DBFFF;
+  --danger:#FF5D5D;
+  --danger-dim:rgba(255,93,93,.14);
+  --safe:#34D399;
+  --safe-dim:rgba(52,211,153,.14);
+  --warn:#FFB020;
+  --warn-dim:rgba(255,176,32,.14);
+  --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --body:'Inter', system-ui, -apple-system, sans-serif;
+  --radius:10px;
+  --shadow:0 20px 50px -20px rgba(0,0,0,.6);
+}
 
-    body {
-      background: linear-gradient(145deg, var(--bg-gradient-start), var(--bg-gradient-end));
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      color: var(--text-color);
-      transition: background 0.3s, color 0.3s;
-    }
+[data-theme="light"]{
+  --ink:#F4F6F9;
+  --panel:#FFFFFF;
+  --panel-2:#F0F3F7;
+  --line:#DCE2E9;
+  --text-hi:#111826;
+  --text-lo:#5B6672;
+  --accent:#2F6FE0;
+  --accent-dim:rgba(47,111,224,.10);
+  --accent-hi:#1E56BE;
+  --shadow:0 20px 50px -25px rgba(20,30,50,.25);
+}
 
-    .card {
-      max-width: 1000px;
-      width: 100%;
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
-      border-radius: 2.5rem;
-      padding: 2.2rem 2rem;
-      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.3);
-      transition: background 0.3s, border-color 0.3s;
-    }
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(1200px 600px at 15% -10%, var(--accent-dim), transparent 60%),
+    var(--ink);
+  color:var(--text-hi);
+  font-family:var(--body);
+  line-height:1.55;
+  min-height:100vh;
+  transition:background .25s ease,color .25s ease;
+}
+a{color:var(--accent);}
+::selection{background:var(--accent-dim);color:var(--text-hi);}
 
-    h1 {
-      font-weight: 600;
-      font-size: 2rem;
-      letter-spacing: -0.5px;
-      background: linear-gradient(120deg, var(--heading-gradient-start), var(--heading-gradient-end));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.3rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+.wrap{max-width:960px;margin:0 auto;padding:0 24px 80px;}
 
-    .subtitle {
-      font-size: 0.95rem;
-      color: var(--subtitle-color);
-      margin-bottom: 2rem;
-      border-left: 4px solid #4d7aff;
-      padding-left: 1.1rem;
-      font-weight: 400;
-    }
+/* ---------- Top bar / tabs ---------- */
+.tabbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;gap:18px;
+  padding:14px 24px;
+  background:color-mix(in srgb, var(--ink) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:600;letter-spacing:.02em;font-size:15px;white-space:nowrap;}
+.brand .glyph{font-size:18px;}
+.tabs{display:flex;gap:4px;margin-left:auto;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;}
+.tab{
+  font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text-lo);
+  border:none;background:transparent;cursor:pointer;
+  padding:7px 16px;border-radius:999px;transition:background .15s ease,color .15s ease;
+}
+.tab:hover{color:var(--text-hi);}
+.tab.active{background:var(--accent);color:#06101F;}
+[data-theme="light"] .tab.active{color:#fff;}
 
-    .input-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 1.8rem;
-    }
+.theme-toggle{
+  border:1px solid var(--line);background:var(--panel);color:var(--text-hi);
+  width:36px;height:36px;border-radius:999px;cursor:pointer;font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .15s ease, transform .15s ease;
+}
+.theme-toggle:hover{border-color:var(--accent);}
+.theme-toggle:active{transform:scale(.92);}
 
-    @media (max-width: 650px) {
-      .input-grid {
-        grid-template-columns: 1fr;
-      }
-      .card {
-        padding: 1.8rem 1.2rem;
-      }
-    }
+/* ---------- Panels ---------- */
+.panel{display:none;}
+.panel.active{display:block;}
 
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
+/* ---------- Headings / copy ---------- */
+.hero{padding:44px 0 8px;}
+.hero h1{font-size:28px;margin:0 0 6px;letter-spacing:-0.01em;}
+.hero p{color:var(--text-lo);margin:0;max-width:60ch;font-size:15px;}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;
+}
+.eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}
 
-    label {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      font-weight: 600;
-      color: var(--label-color);
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
+/* ---------- Cards ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin:18px 0;box-shadow:var(--shadow);}
+.card h2{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px;}
+.card .desc{color:var(--text-lo);font-size:13.5px;margin:0 0 16px;}
 
-    label i {
-      font-style: normal;
-      font-size: 1rem;
-    }
+.field{margin-bottom:14px;}
+.field label{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--text-lo);margin-bottom:6px;letter-spacing:.02em;}
+.field input[type="text"],.field input[type="url"],.field input[type="number"]{
+  width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text-hi);
+  border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:13.5px;outline:none;
+  transition:border-color .15s ease;
+}
+.field input:focus-visible{border-color:var(--accent);}
 
-    input {
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: 1rem;
-      padding: 0.8rem 1.1rem;
-      font-size: 0.95rem;
-      color: var(--input-text);
-      outline: none;
-      transition: all 0.2s;
-      backdrop-filter: blur(5px);
-      font-family: 'Fira Code', 'Courier New', monospace;
-    }
+.row{display:flex;gap:12px;flex-wrap:wrap;}
+.row .field{flex:1;min-width:220px;}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;}
 
-    input:focus {
-      border-color: #4d7aff;
-      box-shadow: 0 0 0 3px rgba(77, 122, 255, 0.25);
-    }
+button.btn{
+  font-family:var(--mono);font-size:13px;font-weight:600;border-radius:8px;padding:10px 16px;
+  border:1px solid var(--line);background:var(--panel-2);color:var(--text-hi);cursor:pointer;
+  transition:transform .1s ease, border-color .15s ease, background .15s ease;
+  display:inline-flex;align-items:center;gap:8px;
+}
+button.btn:hover{border-color:var(--accent);}
+button.btn:active{transform:scale(.97);}
+button.btn.primary{background:var(--accent);border-color:var(--accent);color:#06101F;}
+[data-theme="light"] button.btn.primary{color:#fff;}
+button.btn.danger{border-color:var(--danger);color:var(--danger);}
+button.btn.danger:hover{background:var(--danger-dim);}
+button.btn.ghost{background:transparent;}
+button.btn:disabled{opacity:.45;cursor:not-allowed;}
 
-    .button-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1.8rem;
-      align-items: center;
-    }
+/* ---------- Result / frame area ---------- */
+.frame-shell{
+  position:relative;margin-top:14px;border:1px dashed var(--line);border-radius:10px;overflow:hidden;
+  background:repeating-linear-gradient(45deg, var(--panel-2) 0 10px, var(--panel) 10px 20px);
+  min-height:340px;
+}
+.frame-shell iframe{display:block;width:100%;height:340px;border:0;background:var(--panel);}
+.frame-label{
+  position:absolute;top:8px;left:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;background:rgba(0,0,0,.55);color:#fff;padding:3px 8px;border-radius:999px;
+  z-index:5;pointer-events:none;
+}
 
-    .btn {
-      background: var(--btn-bg);
-      border: 1px solid var(--btn-border);
-      color: inherit;
-      font-weight: 600;
-      padding: 0.75rem 1.8rem;
-      border-radius: 2.5rem;
-      font-size: 0.95rem;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      letter-spacing: 0.3px;
-    }
+.info-line{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--text-lo);margin-top:12px;font-family:var(--mono);}
+.info-line.warn{color:var(--warn);}
+.info-line.safe{color:var(--safe);}
+.info-line.danger{color:var(--danger);}
 
-    .btn-primary {
-      background: var(--btn-primary-bg);
-      border-color: var(--btn-primary-border);
-      color: white;
-      box-shadow: 0 8px 18px rgba(77, 122, 255, 0.3);
-    }
+.badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--text-lo);}
+.badge.idle{color:var(--text-lo);}
+.badge.testing{color:var(--accent);border-color:var(--accent);background:var(--accent-dim);}
+.badge.vulnerable{color:var(--danger);border-color:var(--danger);background:var(--danger-dim);}
+.badge.protected{color:var(--safe);border-color:var(--safe);background:var(--safe-dim);}
+.badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+.badge.testing .dot{animation:pulse 1.1s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
 
-    .btn-primary:hover {
-      background: var(--btn-hover-bg);
-      box-shadow: 0 10px 22px rgba(77, 122, 255, 0.45);
-    }
+/* ---------- Overlay decoy ---------- */
+.decoy-btn{
+  position:absolute;font-family:var(--body);font-weight:700;font-size:14px;border:none;border-radius:8px;
+  padding:12px 22px;background:linear-gradient(135deg,#FFD166,#FF8A5B);color:#221200;cursor:pointer;
+  box-shadow:0 10px 24px -8px rgba(255,138,91,.6);z-index:6;
+}
 
-    .btn-outline {
-      background: transparent;
-      border: 1px solid var(--btn-border);
-    }
+/* ---------- Footer ---------- */
+.foot{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);color:var(--text-lo);font-size:12.5px;display:flex;gap:8px;}
+.foot button.linklike{background:none;border:none;padding:0;color:var(--accent);cursor:pointer;font-size:12.5px;text-decoration:underline;font-family:inherit;}
 
-    .btn-outline:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
+/* ---------- Status readout ---------- */
+.readout{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius);padding:16px 20px;margin:22px 0 8px;font-family:var(--mono);
+  box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.readout::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg, transparent 0 22px, color-mix(in srgb, var(--accent) 10%, transparent) 22px 23px);
+  opacity:.5;pointer-events:none;
+}
+.readout-item{position:relative;z-index:1;}
+.readout-item .k{font-size:10px;color:var(--text-lo);letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:3px;}
+.readout-item .v{font-size:14px;color:var(--text-hi);}
 
-    .toggle-overlay {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-left: auto;
-      background: var(--toggle-bg);
-      padding: 0.45rem 1.2rem;
-      border-radius: 2rem;
-      border: 1px solid var(--card-border);
-    }
+/* ---------- Checklist ---------- */
+.checklist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+.checklist li{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);}
+.checklist li .status{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:999px;margin-left:auto;white-space:nowrap;}
+.checklist li .status.pending{color:var(--text-lo);border:1px solid var(--line);}
+.checklist li .status.fail{color:var(--danger);border:1px solid var(--danger);background:var(--danger-dim);}
+.checklist li .status.pass{color:var(--safe);border:1px solid var(--safe);background:var(--safe-dim);}
 
-    .toggle-overlay input {
-      transform: scale(1.1);
-      accent-color: #ff7b42;
-    }
+pre.code{
+  background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:14px;font-family:var(--mono);
+  font-size:12.5px;overflow-x:auto;color:var(--text-hi);white-space:pre-wrap;word-break:break-word;
+}
 
-    .frame-container {
-      position: relative;
-      width: 100%;
-      height: 520px;
-      border-radius: 1.4rem;
-      overflow: hidden;
-      background: var(--frame-bg);
-      border: 1px solid var(--frame-border);
-      margin: 1.6rem 0 1rem;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
-      transition: background 0.3s;
-    }
+.slider-row{display:flex;align-items:center;gap:12px;}
+.slider-row input[type="range"]{flex:1;accent-color:var(--accent);}
+.slider-row .val{font-family:var(--mono);font-size:12px;color:var(--accent);min-width:44px;text-align:right;}
 
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-      background: #ffffff; /* fallback for iframe content */
-    }
+.draggable{
+  cursor:grab;user-select:none;padding:10px 16px;border-radius:8px;
+  background:linear-gradient(135deg,#FFD166,#FF8A5B);color:#221200;font-weight:700;font-size:13px;
+  display:inline-flex;width:fit-content;
+}
+.drop-zone{
+  margin-top:12px;border:1.5px dashed var(--line);border-radius:10px;min-height:90px;
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--text-lo);
+  transition:border-color .15s ease, background .15s ease;
+}
+.drop-zone.over{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
 
-    .overlay-attack {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 10;
-      display: none;
-      background: var(--overlay-bg);
-      backdrop-filter: blur(0.5px);
-    }
+.log{
+  background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:var(--mono);
+  font-size:12px;max-height:160px;overflow-y:auto;color:var(--text-lo);
+}
+.log .entry{padding:3px 0;border-bottom:1px dashed var(--line);}
+.log .entry:last-child{border-bottom:none;}
+.log .entry .t{color:var(--accent);}
 
-    .overlay-attack.active {
-      display: block;
-      pointer-events: auto;
-    }
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:640px){.grid-2{grid-template-columns:1fr;}}
 
-    .fake-button {
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #ff4747;
-      color: white;
-      font-weight: bold;
-      font-size: 1.3rem;
-      padding: 1.2rem 2.5rem;
-      border-radius: 4rem;
-      box-shadow: 0 12px 28px rgba(0,0,0,0.6);
-      cursor: pointer;
-      text-align: center;
-      letter-spacing: 0.4px;
-      backdrop-filter: blur(10px);
-      border: 2px solid rgba(255,255,255,0.3);
-      transition: 0.2s;
-    }
-
-    .fake-button:hover {
-      background: #e63946;
-      transform: translate(-50%, -50%) scale(1.03);
-    }
-
-    .message-box {
-      background: var(--message-bg);
-      border-radius: 1rem;
-      padding: 1rem 1.4rem;
-      margin: 1rem 0;
-      border-left: 5px solid #ffaa33;
-      font-size: 0.95rem;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.7rem;
-      backdrop-filter: blur(8px);
-      transition: background 0.3s;
-    }
-
-    .warning-icon {
-      font-size: 1.4rem;
-    }
-
-    .vulnerable {
-      border-left-color: #ff4d4d;
-      background: rgba(255, 70, 70, 0.08);
-    }
-
-    .safe {
-      border-left-color: #2ecc71;
-      background: rgba(46, 204, 113, 0.06);
-    }
-
-    hr {
-      border-color: rgba(255,255,255,0.1);
-      margin: 1.8rem 0 1rem;
-    }
-
-    .footer-note {
-      font-size: 0.8rem;
-      color: var(--footer-color);
-      text-align: center;
-      margin-top: 0.8rem;
-    }
-
-    .url-display {
-      background: var(--url-display-bg);
-      padding: 0.4rem 1rem;
-      border-radius: 2rem;
-      font-family: monospace;
-      color: var(--url-display-color);
-      word-break: break-all;
-      display: inline-block;
-      font-size: 0.85rem;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    /* Theme toggle button styling */
-    .theme-toggle {
-      background: transparent;
-      border: 1px solid var(--card-border);
-      color: var(--text-color);
-      font-size: 1.3rem;
-      cursor: pointer;
-      border-radius: 50%;
-      width: 42px;
-      height: 42px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(6px);
-      margin-left: 0.5rem;
-      transition: 0.2s;
-    }
-
-    .theme-toggle:hover {
-      background: var(--btn-bg);
-    }
-  </style>
+.warn-banner{
+  display:flex;gap:10px;align-items:flex-start;background:var(--warn-dim);
+  border:1px solid color-mix(in srgb, var(--warn) 50%, var(--line));color:var(--warn);
+  border-radius:10px;padding:12px 14px;font-size:13px;margin:20px 0;
+}
+</style>
 </head>
-<body class="dark-theme">
-  <div class="card">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h1>
-        <span>🛡️</span> Clickjacking Validator
-      </h1>
-      <button id="themeToggle" class="theme-toggle" aria-label="Switch theme" title="Toggle light/dark theme">
-        🌙
-      </button>
-    </div>
-    <div class="subtitle">
-      Enter two URLs: one for display, one for the iframe source. <br>Watch for framing &amp; simulate an overlay attack.
-    </div>
+<body>
 
-    <div class="input-grid">
-      <div class="input-group">
-        <label><i>🏷️</i> Display URL</label>
-        <input type="url" id="displayUrl" placeholder="https://example.com" value="https://report.insight.gov.in/reporting-webapp/portal/homePage">
-      </div>
-      <div class="input-group">
-        <label><i>🔗</i> Iframe Source URL</label>
-        <input type="url" id="iframeUrl" placeholder="https://example.com" value="https://report.insight.gov.in/reporting-webapp/portal/homePage">
-      </div>
-    </div>
-
-    <div class="button-bar">
-      <button class="btn btn-primary" id="testBtn">🔍 Test framing</button>
-      <button class="btn btn-outline" id="resetBtn">↺ Reset</button>
-      <div class="toggle-overlay">
-        <label for="overlayToggle" style="font-size:0.85rem; cursor:pointer;">🎭 Overlay attack</label>
-        <input type="checkbox" id="overlayToggle">
-      </div>
-    </div>
-
-    <div id="statusMessage" class="message-box">
-      <span class="warning-icon">ℹ️</span>
-      <span id="statusText">Enter URLs and click <strong>Test framing</strong>. If the site loads inside the frame, it may be vulnerable to clickjacking.</span>
-    </div>
-
-    <div class="frame-container" id="frameWrapper">
-      <iframe id="testFrame" src="about:blank" title="Target site iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
-      <div id="clickjackOverlay" class="overlay-attack">
-        <div class="fake-button" id="fakeBtn">🎁 CLAIM FREE REWARD</div>
-      </div>
-    </div>
-
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-      <span id="targetDisplayLabel" class="url-display">—</span>
-      <span style="font-size:0.8rem; opacity:0.8;">⚠️ If frame remains blank, X-Frame-Options or CSP may be blocking it.</span>
-    </div>
-
-    <hr>
-    <div class="footer-note">
-      🔒 This tool is for educational and authorized security testing only. Always obtain permission before testing.
-    </div>
+<nav class="tabbar">
+  <div class="brand"><span class="glyph">🛡️</span> Clickjacking Validator</div>
+  <div class="tabs">
+    <button class="tab active" id="tabBtnClassic" data-panel="classic">Classic Test</button>
+    <button class="tab" id="tabBtnAdvanced" data-panel="advanced">Advanced Lab</button>
   </div>
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+</nav>
 
-  <script>
-    (function() {
-      // DOM elements
-      const displayUrlInput = document.getElementById('displayUrl');
-      const iframeUrlInput = document.getElementById('iframeUrl');
-      const testBtn = document.getElementById('testBtn');
-      const resetBtn = document.getElementById('resetBtn');
-      const overlayToggle = document.getElementById('overlayToggle');
-      const overlayDiv = document.getElementById('clickjackOverlay');
-      const fakeButton = document.getElementById('fakeBtn');
-      const testFrame = document.getElementById('testFrame');
-      const statusMessageDiv = document.getElementById('statusMessage');
-      const statusText = document.getElementById('statusText');
-      const targetDisplayLabel = document.getElementById('targetDisplayLabel');
-      const themeToggle = document.getElementById('themeToggle');
-      const body = document.body;
+<div class="wrap">
 
-      // ----- Theme toggling -----
-      function setTheme(theme) {
-        if (theme === 'light') {
-          body.classList.add('light-theme');
-          body.classList.remove('dark-theme');
-          themeToggle.innerHTML = '☀️'; // sun icon for light mode (to switch to dark)
-          localStorage.setItem('clickjack-theme', 'light');
-        } else {
-          body.classList.remove('light-theme');
-          body.classList.add('dark-theme');
-          themeToggle.innerHTML = '🌙'; // moon for dark mode (to switch to light)
-          localStorage.setItem('clickjack-theme', 'dark');
-        }
+  <!-- =========================================================
+       PANEL 1 — Classic test
+       ========================================================= -->
+  <section class="panel active" id="panel-classic">
+
+    <div class="hero">
+      <div class="eyebrow">Frame &amp; overlay demo</div>
+      <h1>🛡️ Clickjacking Validator</h1>
+      <p>Enter two URLs: one for display, one for the iframe source. Watch for framing &amp; simulate an overlay attack.</p>
+    </div>
+
+    <div class="card">
+      <h2>🏷️ Test setup</h2>
+      <p class="desc">The display URL is shown for reference only. The iframe source is what actually gets framed below.</p>
+
+      <div class="row">
+        <div class="field">
+          <label>🏷️ Display URL</label>
+          <input type="text" id="displayUrl" placeholder="https://example.com">
+        </div>
+        <div class="field">
+          <label>🔗 Iframe Source URL</label>
+          <input type="text" id="iframeUrl" placeholder="https://example.com">
+        </div>
+      </div>
+
+      <div class="btns">
+        <button class="btn primary" id="testBtn">🔍 Test framing</button>
+        <button class="btn ghost" id="resetBtn">↺ Reset</button>
+        <button class="btn" id="overlayBtn">🎭 Overlay attack</button>
+      </div>
+
+      <div class="info-line" id="infoLine">
+        <span>ℹ️ Enter URLs and click <strong>Test framing</strong>. If the site loads inside the frame, it may be vulnerable to clickjacking.</span>
+      </div>
+
+      <div class="frame-shell" id="frameShell">
+        <span class="frame-label">iframe preview</span>
+        <iframe id="testFrame" src="about:blank" title="Clickjacking test frame"></iframe>
+      </div>
+
+      <div class="info-line warn">
+        <span>⚠️ If frame remains blank, X-Frame-Options or CSP may be blocking it.</span>
+      </div>
+    </div>
+
+    <div class="warn-banner">
+      🔒 This tool is for educational and authorized security testing only. Always obtain permission before testing a target that isn't yours.
+    </div>
+
+    <div class="foot">
+      <span>Classic single-frame test. Need nested frames, an overlay builder, drag-jacking, postMessage checks, or a header inspector? → <button class="linklike" data-goto="advanced">Advanced Lab</button></span>
+    </div>
+
+  </section>
+
+  <!-- =========================================================
+       PANEL 2 — Advanced lab
+       ========================================================= -->
+  <section class="panel" id="panel-advanced">
+
+    <div class="hero">
+      <div class="eyebrow">Advanced test suite</div>
+      <h1>🧪 Advanced Clickjacking Lab</h1>
+      <p>Six focused test modules for building a real clickjacking case: nested-frame bypass, an adjustable overlay PoC generator, drag-jacking, postMessage exposure, response-header analysis, and timing-based bypass.</p>
+    </div>
+
+    <div class="readout">
+      <div class="readout-item">
+        <span class="k">Target</span>
+        <span class="v" id="roTarget">— not set —</span>
+      </div>
+      <div class="readout-item">
+        <span class="k">Status</span>
+        <span class="v"><span class="badge idle" id="roBadge"><span class="dot"></span>Idle</span></span>
+      </div>
+      <div class="readout-item">
+        <span class="k">Tests run</span>
+        <span class="v" id="roCount">0</span>
+      </div>
+    </div>
+
+    <div class="warn-banner">
+      ⚠️ Only run these tests against systems you own or are explicitly authorized to assess. Nothing here bypasses real browser security — the framing and overlay tests simply visualize what an attacker-controlled page could construct, so you can document and report it.
+    </div>
+
+    <!-- Global target -->
+    <div class="card">
+      <h2>🎯 Target</h2>
+      <p class="desc">Set once — every module below reuses it. (Running the Classic test also fills this in automatically.)</p>
+      <div class="field">
+        <label>🔗 Target URL</label>
+        <input type="text" id="globalTarget" placeholder="https://example.com">
+      </div>
+    </div>
+
+    <!-- 1. Nested frame bypass -->
+    <div class="card">
+      <h2>🪆 Nested frame bypass test</h2>
+      <p class="desc">Frames the target three levels deep. Simple frame-busting scripts that only compare <code>top.location</code> to <code>self.location</code> can miss intermediate frames — this surfaces whether that gap exists.</p>
+      <div class="btns">
+        <button class="btn primary" id="nestedRunBtn">🔍 Run nested-frame test</button>
+        <button class="btn ghost" id="nestedResetBtn">↺ Reset</button>
+      </div>
+      <div class="info-line" id="nestedInfo">ℹ️ Set a target above, then run the test. Depth 3 is rendered below.</div>
+      <div class="frame-shell" id="nestedShell">
+        <span class="frame-label">depth 1 → 2 → 3</span>
+        <iframe id="nestedFrame1" src="about:blank" title="nested frame depth 1" style="height:300px"></iframe>
+      </div>
+    </div>
+
+    <!-- 2. Overlay PoC builder -->
+    <div class="card">
+      <h2>🎭 Overlay PoC builder</h2>
+      <p class="desc">Position and fade a decoy control over the framed target, then export a standalone PoC file for your report.</p>
+
+      <div class="field">
+        <label>🏷️ Decoy button text</label>
+        <input type="text" id="decoyText" value="🎁 CLAIM FREE REWARD">
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Horizontal position</label>
+          <div class="slider-row">
+            <input type="range" id="decoyX" min="0" max="100" value="50">
+            <span class="val" id="decoyXVal">50%</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Vertical position</label>
+          <div class="slider-row">
+            <input type="range" id="decoyY" min="0" max="100" value="50">
+            <span class="val" id="decoyYVal">50%</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Opacity</label>
+          <div class="slider-row">
+            <input type="range" id="decoyOpacity" min="0" max="100" value="90">
+            <span class="val" id="decoyOpacityVal">90%</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Rotation (°)</label>
+          <div class="slider-row">
+            <input type="range" id="decoyRotate" min="-45" max="45" value="0">
+            <span class="val" id="decoyRotateVal">0°</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button class="btn primary" id="overlayRunBtn">🔍 Load target</button>
+        <button class="btn" id="overlayCopyBtn">📋 Copy PoC HTML</button>
+        <button class="btn ghost" id="overlayResetBtn">↺ Reset</button>
+      </div>
+
+      <div class="frame-shell" id="overlayShell">
+        <span class="frame-label">overlay preview</span>
+        <iframe id="overlayFrame" src="about:blank" title="overlay test frame"></iframe>
+      </div>
+
+      <details style="margin-top:14px;">
+        <summary style="cursor:pointer;font-family:var(--mono);font-size:12.5px;color:var(--text-lo);">View generated PoC source</summary>
+        <pre class="code" id="overlayCode" style="margin-top:10px;"></pre>
+      </details>
+    </div>
+
+    <!-- 3. Drag & drop -->
+    <div class="card">
+      <h2>🖱️ Drag-jacking simulator</h2>
+      <p class="desc">Some sites only guard against <em>clicks</em>, not drags. Drag the decoy chip onto the drop zone overlapping the framed target to check whether drag interactions reach through.</p>
+      <div class="btns">
+        <button class="btn ghost" id="dragResetBtn">↺ Reset</button>
+      </div>
+      <div class="row">
+        <div style="flex:1;min-width:180px;">
+          <span class="draggable" id="dragChip" draggable="true">⠿ Drag me</span>
+        </div>
+      </div>
+      <div class="drop-zone" id="dropZone">Drop the chip here — over where a real target's button would sit</div>
+      <div class="info-line" id="dragInfo">ℹ️ Not tested yet.</div>
+    </div>
+
+    <!-- 4. postMessage tester -->
+    <div class="card">
+      <h2>📡 postMessage exposure tester</h2>
+      <p class="desc">Sends a benign probe message to the target frame with a wildcard <code>targetOrigin</code> and logs anything the target posts back. A target that responds to unsolicited, broadly-targeted messages is worth a closer look in your report.</p>
+      <div class="btns">
+        <button class="btn primary" id="pmSendBtn">📤 Send probe message</button>
+        <button class="btn ghost" id="pmClearBtn">🧹 Clear log</button>
+      </div>
+      <div class="log" id="pmLog"><div class="entry">Log is empty. Load a target in the Overlay builder above first, then send a probe.</div></div>
+    </div>
+
+    <!-- 5. Header inspector -->
+    <div class="card">
+      <h2>📋 Response header inspector</h2>
+      <p class="desc">Checks for <code>X-Frame-Options</code>, <code>Content-Security-Policy: frame-ancestors</code>, and <code>Permissions-Policy</code>. Most sites don't send CORS headers that let a browser page read these cross-origin, so this falls back to a ready-to-run terminal command when the browser can't see them.</p>
+      <div class="btns">
+        <button class="btn primary" id="headerCheckBtn">🔍 Check headers</button>
+      </div>
+      <div class="info-line" id="headerInfo">ℹ️ Set a target above, then check headers.</div>
+      <pre class="code" id="headerCurl" style="display:none;"></pre>
+    </div>
+
+    <!-- 6. Timing bypass -->
+    <div class="card">
+      <h2>⏱️ Timing / multi-step bypass test</h2>
+      <p class="desc">Some confirmation flows only need two clicks in quick succession — a common bypass for defenses that expect a single deliberate click. This times a two-click sequence so you can note the window a real overlay would need.</p>
+      <div class="btns">
+        <button class="btn primary" id="timingBtn">Click 1 of 2</button>
+        <button class="btn ghost" id="timingResetBtn">↺ Reset</button>
+      </div>
+      <div class="info-line" id="timingInfo">ℹ️ Not started.</div>
+    </div>
+
+    <!-- 7. Report checklist -->
+    <div class="card">
+      <h2>📝 Report checklist</h2>
+      <p class="desc">Fills in automatically as you run tests above (click an item to toggle it manually too). Copy this straight into your findings write-up.</p>
+      <ul class="checklist" id="checklist">
+        <li>Framing test (Classic tab) <span class="status pending" id="chkFraming">pending</span></li>
+        <li>Nested-frame bypass <span class="status pending" id="chkNested">pending</span></li>
+        <li>Overlay PoC built <span class="status pending" id="chkOverlay">pending</span></li>
+        <li>Drag-jacking test <span class="status pending" id="chkDrag">pending</span></li>
+        <li>postMessage probe <span class="status pending" id="chkPm">pending</span></li>
+        <li>Response headers checked <span class="status pending" id="chkHeaders">pending</span></li>
+        <li>Timing bypass test <span class="status pending" id="chkTiming">pending</span></li>
+      </ul>
+      <div class="btns" style="margin-top:14px;">
+        <button class="btn" id="copySummaryBtn">📋 Copy summary as Markdown</button>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>← Back to the <button class="linklike" data-goto="classic">Classic Test</button></span>
+    </div>
+
+  </section>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ==========================================================
+     Theme toggle (persisted)
+     ========================================================== */
+  (function themeModule() {
+    const KEY = 'cj-theme';
+    const root = document.documentElement;
+    const saved = localStorage.getItem(KEY) || 'dark';
+    if (saved === 'light') root.setAttribute('data-theme', 'light');
+
+    const btn = document.getElementById('themeToggle');
+    function applyIcon() {
+      const isLight = root.getAttribute('data-theme') === 'light';
+      btn.textContent = isLight ? '☀️' : '🌙';
+    }
+    applyIcon();
+    btn.addEventListener('click', () => {
+      const isLight = root.getAttribute('data-theme') === 'light';
+      if (isLight) { root.removeAttribute('data-theme'); localStorage.setItem(KEY, 'dark'); }
+      else { root.setAttribute('data-theme', 'light'); localStorage.setItem(KEY, 'light'); }
+      applyIcon();
+    });
+  })();
+
+  /* ==========================================================
+     Tab switching (in-page, no reload)
+     ========================================================== */
+  (function tabModule() {
+    const tabBtns = document.querySelectorAll('.tab');
+    const panels = { classic: document.getElementById('panel-classic'), advanced: document.getElementById('panel-advanced') };
+
+    function go(name) {
+      Object.entries(panels).forEach(([key, el]) => el.classList.toggle('active', key === name));
+      tabBtns.forEach(b => b.classList.toggle('active', b.dataset.panel === name));
+      window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+    }
+
+    tabBtns.forEach(b => b.addEventListener('click', () => go(b.dataset.panel)));
+    document.querySelectorAll('[data-goto]').forEach(b =>
+      b.addEventListener('click', () => go(b.dataset.goto))
+    );
+
+    window.CJ_goToTab = go;
+  })();
+
+  /* ==========================================================
+     Shared helpers used by both Classic and Advanced modules
+     ========================================================== */
+  function normalizeUrl(raw) {
+    if (!raw) return '';
+    try {
+      const hasScheme = /^https?:\/\//i.test(raw);
+      return new URL(hasScheme ? raw : `https://${raw}`).toString();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  let testsRun = 0;
+  const roTarget = document.getElementById('roTarget');
+  const roBadge  = document.getElementById('roBadge');
+  const roCount  = document.getElementById('roCount');
+  const globalTargetEl = document.getElementById('globalTarget');
+
+  function setStatus(state) {
+    const labels = { idle: 'Idle', testing: 'Testing…', vulnerable: 'Frames', protected: 'Blocked' };
+    roBadge.className = `badge ${state}`;
+    roBadge.innerHTML = `<span class="dot"></span>${labels[state] || state}`;
+  }
+  function bumpTests() { testsRun += 1; roCount.textContent = String(testsRun); }
+  function currentTarget() {
+    const t = normalizeUrl(globalTargetEl.value.trim());
+    roTarget.textContent = t || '— not set —';
+    return t;
+  }
+  function markChecklist(id, status, text) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = `status ${status}`;
+    el.textContent = text || status;
+  }
+  globalTargetEl.addEventListener('input', currentTarget);
+
+  /* ==========================================================
+     Classic panel logic
+     ========================================================== */
+  (function classicModule() {
+    const displayUrlEl = document.getElementById('displayUrl');
+    const iframeUrlEl  = document.getElementById('iframeUrl');
+    const testBtn      = document.getElementById('testBtn');
+    const resetBtn     = document.getElementById('resetBtn');
+    const overlayBtn   = document.getElementById('overlayBtn');
+    const infoLine     = document.getElementById('infoLine');
+    const frameShell   = document.getElementById('frameShell');
+    const testFrame    = document.getElementById('testFrame');
+
+    let decoyEl = null;
+
+    function setInfo(html, tone) {
+      infoLine.className = 'info-line' + (tone ? ` ${tone}` : '');
+      infoLine.innerHTML = html;
+    }
+
+    testBtn.addEventListener('click', () => {
+      const target = normalizeUrl(iframeUrlEl.value.trim());
+      if (!target) {
+        setInfo('⚠️ Enter a valid iframe source URL first.', 'warn');
+        return;
       }
+      setInfo('⏳ Loading target inside the frame — watch for content vs. a blank frame below.');
+      testFrame.src = 'about:blank';
+      setTimeout(() => { testFrame.src = target; }, 80);
 
-      function toggleTheme() {
-        if (body.classList.contains('light-theme')) {
-          setTheme('dark');
-        } else {
-          setTheme('light');
-        }
+      // Carry the target over to the Advanced Lab and check it off the report.
+      if (!globalTargetEl.value.trim()) {
+        globalTargetEl.value = iframeUrlEl.value.trim();
+        currentTarget();
       }
+      markChecklist('chkFraming', 'pass', 'ran');
+    });
 
-      // Load saved theme or default dark
-      const savedTheme = localStorage.getItem('clickjack-theme');
-      if (savedTheme === 'light') {
-        setTheme('light');
-      } else {
-        setTheme('dark'); // default dark
+    resetBtn.addEventListener('click', () => {
+      displayUrlEl.value = '';
+      iframeUrlEl.value = '';
+      testFrame.src = 'about:blank';
+      setInfo('ℹ️ Enter URLs and click <strong>Test framing</strong>. If the site loads inside the frame, it may be vulnerable to clickjacking.');
+      if (decoyEl) { decoyEl.remove(); decoyEl = null; }
+    });
+
+    overlayBtn.addEventListener('click', () => {
+      if (decoyEl) {
+        decoyEl.remove();
+        decoyEl = null;
+        overlayBtn.textContent = '🎭 Overlay attack';
+        return;
       }
-
-      themeToggle.addEventListener('click', toggleTheme);
-
-      // Helper to update UI message
-      function setStatus(type, message) {
-        statusMessageDiv.className = 'message-box ' + (type || '');
-        statusText.innerHTML = message;
-      }
-
-      // Validate URL format (basic)
-      function isValidUrl(str) {
-        try {
-          const url = new URL(str);
-          return url.protocol === 'http:' || url.protocol === 'https:';
-        } catch (_) {
-          return false;
-        }
-      }
-
-      // Load the iframe and update display
-      function performTest() {
-        const displayUrl = displayUrlInput.value.trim();
-        let iframeUrl = iframeUrlInput.value.trim();
-
-        if (!displayUrl || !iframeUrl) {
-          setStatus('', '⚠️ Please fill both URL fields.');
-          return;
-        }
-
-        if (!/^https?:\/\//i.test(iframeUrl)) {
-          iframeUrl = 'https://' + iframeUrl;
-          iframeUrlInput.value = iframeUrl;
-        }
-
-        if (!isValidUrl(iframeUrl)) {
-          setStatus('', '❌ Invalid iframe URL. Must be a full http/https address.');
-          return;
-        }
-
-        targetDisplayLabel.textContent = displayUrl.length > 45 ? displayUrl.substring(0, 45) + '…' : displayUrl;
-        targetDisplayLabel.title = displayUrl;
-
-        testFrame.src = 'about:blank';
-
-        setTimeout(() => {
-          testFrame.src = iframeUrl;
-          setStatus('', '⏳ Loading target into iframe... Observe if it appears below.');
-        }, 80);
-
-        setTimeout(() => {
-          try {
-            const frameWindow = testFrame.contentWindow;
-            if (frameWindow) {
-              setStatus('', '👀 <strong>Visual check:</strong> If you see the website inside the frame, it lacks proper clickjacking protection (X-Frame-Options/CSP).');
-            }
-          } catch (e) {
-            setStatus('', '🔒 Cross-origin frame. Cannot programmatically verify. Check visually: if site is visible, it may be vulnerable. If blank, protection is active.');
-          }
-        }, 1500);
-      }
-
-      function resetAll() {
-        displayUrlInput.value = 'https://report.insight.gov.in/reporting-webapp/portal/homePage';
-        iframeUrlInput.value = 'https://report.insight.gov.in/reporting-webapp/portal/homePage';
-        testFrame.src = 'about:blank';
-        overlayToggle.checked = false;
-        overlayDiv.classList.remove('active');
-        targetDisplayLabel.textContent = '—';
-        setStatus('', 'ℹ️ Ready. Enter target URLs and click <strong>Test framing</strong>.');
-      }
-
-      overlayToggle.addEventListener('change', function(e) {
-        if (e.target.checked) {
-          if (testFrame.src && testFrame.src !== 'about:blank') {
-            overlayDiv.classList.add('active');
-          } else {
-            alert('Please load a target URL first using "Test framing".');
-            overlayToggle.checked = false;
-          }
-        } else {
-          overlayDiv.classList.remove('active');
-        }
-      });
-
-      fakeButton.addEventListener('click', function(e) {
+      decoyEl = document.createElement('button');
+      decoyEl.className = 'decoy-btn';
+      decoyEl.textContent = '🎁 CLAIM FREE REWARD';
+      decoyEl.style.left = '50%';
+      decoyEl.style.top = '50%';
+      decoyEl.style.transform = 'translate(-50%,-50%)';
+      decoyEl.style.opacity = '0.92';
+      decoyEl.addEventListener('click', (e) => {
         e.preventDefault();
-        alert('⚠️ CLICKJACKING DEMO: You clicked the fake button!\n\nIn a real attack, this could have transferred money, changed settings, or performed any action on the real site hidden beneath.');
-        overlayToggle.checked = false;
-        overlayDiv.classList.remove('active');
+        alert('This decoy button sits on top of the framed page.\n\nIn a real attack this would be positioned exactly over a sensitive control in the iframe (e.g. "Delete account" or "Confirm transfer") and made invisible with opacity:0.');
       });
+      frameShell.appendChild(decoyEl);
+      overlayBtn.textContent = '🎭 Remove overlay';
+    });
+  })();
 
-      testBtn.addEventListener('click', performTest);
-      resetBtn.addEventListener('click', resetAll);
+  /* ==========================================================
+     1. Nested frame bypass test
+     ========================================================== */
+  (function nestedFrameModule() {
+    const runBtn   = document.getElementById('nestedRunBtn');
+    const resetBtn = document.getElementById('nestedResetBtn');
+    const info     = document.getElementById('nestedInfo');
+    const frame1   = document.getElementById('nestedFrame1');
 
-      displayUrlInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performTest(); });
-      iframeUrlInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performTest(); });
+    runBtn.addEventListener('click', () => {
+      const target = currentTarget();
+      if (!target) {
+        info.textContent = '⚠️ Set a target URL first.';
+        info.className = 'info-line warn';
+        return;
+      }
+      setStatus('testing');
+      info.textContent = '⏳ Building 3-level nested frame…';
+      info.className = 'info-line';
 
-      targetDisplayLabel.textContent = '—';
-    })();
-  </script>
+      const level3 = `<iframe src="${target}" style="width:100%;height:100%;border:0;"></iframe>`;
+      const level2Html = `<!DOCTYPE html><html><body style="margin:0;">${level3}</body></html>`;
+      const level2 = `<iframe style="width:100%;height:100%;border:0;" srcdoc="${level2Html.replace(/"/g, '&quot;')}"></iframe>`;
+
+      frame1.removeAttribute('srcdoc');
+      frame1.src = 'about:blank';
+      setTimeout(() => {
+        frame1.srcdoc = `<!DOCTYPE html><html><body style="margin:0;">${level2}</body></html>`;
+        setTimeout(() => {
+          info.textContent = 'ℹ️ Nested frame built. If target content is visible at the innermost level, frame-busting is not effective against nested framing — note this in your report. A blank/broken innermost frame suggests protection held.';
+          info.className = 'info-line';
+          setStatus('idle');
+          bumpTests();
+          markChecklist('chkNested', 'pass', 'ran');
+        }, 500);
+      }, 80);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      frame1.removeAttribute('srcdoc');
+      frame1.src = 'about:blank';
+      info.textContent = 'ℹ️ Set a target above, then run the test. Depth 3 is rendered below.';
+      info.className = 'info-line';
+    });
+  })();
+
+  /* ==========================================================
+     2. Overlay PoC builder
+     ========================================================== */
+  (function overlayModule() {
+    const decoyText  = document.getElementById('decoyText');
+    const xSlider    = document.getElementById('decoyX');
+    const ySlider    = document.getElementById('decoyY');
+    const opSlider   = document.getElementById('decoyOpacity');
+    const rotSlider  = document.getElementById('decoyRotate');
+    const xVal = document.getElementById('decoyXVal');
+    const yVal = document.getElementById('decoyYVal');
+    const opVal = document.getElementById('decoyOpacityVal');
+    const rotVal = document.getElementById('decoyRotateVal');
+    const runBtn   = document.getElementById('overlayRunBtn');
+    const copyBtn  = document.getElementById('overlayCopyBtn');
+    const resetBtn = document.getElementById('overlayResetBtn');
+    const shell    = document.getElementById('overlayShell');
+    const frame    = document.getElementById('overlayFrame');
+    const codeOut  = document.getElementById('overlayCode');
+
+    let decoyEl = null;
+    let loadedTarget = '';
+
+    function ensureDecoy() {
+      if (decoyEl) return decoyEl;
+      decoyEl = document.createElement('button');
+      decoyEl.className = 'decoy-btn';
+      shell.appendChild(decoyEl);
+      return decoyEl;
+    }
+
+    function renderDecoy() {
+      const el = ensureDecoy();
+      el.textContent = decoyText.value || 'Decoy';
+      el.style.left = `${xSlider.value}%`;
+      el.style.top = `${ySlider.value}%`;
+      el.style.transform = `translate(-50%,-50%) rotate(${rotSlider.value}deg)`;
+      el.style.opacity = String(Number(opSlider.value) / 100);
+      xVal.textContent = `${xSlider.value}%`;
+      yVal.textContent = `${ySlider.value}%`;
+      opVal.textContent = `${opSlider.value}%`;
+      rotVal.textContent = `${rotSlider.value}°`;
+      renderCode();
+    }
+
+    function renderCode() {
+      const target = loadedTarget || 'https://TARGET-URL-HERE';
+      const text = (decoyText.value || 'Decoy').replace(/</g, '&lt;');
+      const html = `<!-- Clickjacking PoC — authorized testing only -->
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>PoC</title></head>
+<body style="margin:0;">
+  <div style="position:relative;width:100%;height:100vh;overflow:hidden;">
+    <iframe src="${target}"
+            style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"></iframe>
+    <button style="position:absolute;
+                    left:${xSlider.value}%;
+                    top:${ySlider.value}%;
+                    transform:translate(-50%,-50%) rotate(${rotSlider.value}deg);
+                    opacity:${Number(opSlider.value) / 100};
+                    z-index:2;padding:14px 24px;border:none;border-radius:8px;
+                    font-weight:700;cursor:pointer;">
+      ${text}
+    </button>
+  </div>
+</body>
+</html>`;
+      codeOut.textContent = html;
+      return html;
+    }
+
+    [decoyText, xSlider, ySlider, opSlider, rotSlider].forEach(el =>
+      el.addEventListener('input', renderDecoy)
+    );
+
+    runBtn.addEventListener('click', () => {
+      const target = currentTarget();
+      if (!target) {
+        alert('Set a target URL first.');
+        return;
+      }
+      loadedTarget = target;
+      frame.src = 'about:blank';
+      setTimeout(() => { frame.src = target; }, 80);
+      renderDecoy();
+      bumpTests();
+      markChecklist('chkOverlay', 'pass', 'built');
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      const html = renderCode();
+      try {
+        await navigator.clipboard.writeText(html);
+        copyBtn.textContent = '✅ Copied';
+        setTimeout(() => { copyBtn.textContent = '📋 Copy PoC HTML'; }, 1600);
+      } catch (e) {
+        alert('Copy failed — select the code block below and copy manually.');
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      frame.src = 'about:blank';
+      if (decoyEl) { decoyEl.remove(); decoyEl = null; }
+      loadedTarget = '';
+      codeOut.textContent = '';
+    });
+
+    renderDecoy();
+  })();
+
+  /* ==========================================================
+     3. Drag & drop (dragjacking) simulator
+     ========================================================== */
+  (function dragModule() {
+    const chip = document.getElementById('dragChip');
+    const zone = document.getElementById('dropZone');
+    const info = document.getElementById('dragInfo');
+    const resetBtn = document.getElementById('dragResetBtn');
+
+    chip.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', 'cj-chip');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('over');
+      zone.textContent = '✅ Drop registered — a drag-based interaction reached this zone.';
+      info.textContent = 'ℹ️ If this zone visually overlapped a real target\'s control, a drag-only defense would have been bypassed. Note it in your report.';
+      info.className = 'info-line warn';
+      bumpTests();
+      markChecklist('chkDrag', 'pass', 'ran');
+    });
+
+    resetBtn.addEventListener('click', () => {
+      zone.textContent = 'Drop the chip here — over where a real target\'s button would sit';
+      info.textContent = 'ℹ️ Not tested yet.';
+      info.className = 'info-line';
+    });
+  })();
+
+  /* ==========================================================
+     4. postMessage exposure tester
+     ========================================================== */
+  (function postMessageModule() {
+    const sendBtn  = document.getElementById('pmSendBtn');
+    const clearBtn = document.getElementById('pmClearBtn');
+    const log      = document.getElementById('pmLog');
+    const overlayFrame = document.getElementById('overlayFrame');
+
+    function logEntry(text) {
+      const time = new Date().toLocaleTimeString();
+      if (log.textContent.includes('Log is empty') || log.textContent.includes('Log cleared')) log.innerHTML = '';
+      const div = document.createElement('div');
+      div.className = 'entry';
+      div.innerHTML = `<span class="t">[${time}]</span> ${text}`;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    window.addEventListener('message', (event) => {
+      logEntry(`Received message from <strong>${event.origin}</strong>: ${JSON.stringify(event.data).slice(0, 140)}`);
+    });
+
+    sendBtn.addEventListener('click', () => {
+      if (!overlayFrame || !overlayFrame.contentWindow || overlayFrame.src === 'about:blank') {
+        logEntry('⚠️ No target loaded — load one via "Load target" in the Overlay builder above first.');
+        return;
+      }
+      const probe = { type: 'cj-probe', from: 'clickjacking-validator', ts: Date.now() };
+      try {
+        overlayFrame.contentWindow.postMessage(probe, '*');
+        logEntry(`Sent probe → ${JSON.stringify(probe)} (targetOrigin: *)`);
+        bumpTests();
+        markChecklist('chkPm', 'pass', 'sent');
+      } catch (e) {
+        logEntry(`⚠️ postMessage failed: ${e.message}`);
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      log.innerHTML = '<div class="entry">Log cleared.</div>';
+    });
+  })();
+
+  /* ==========================================================
+     5. Header inspector
+     ========================================================== */
+  (function headerModule() {
+    const btn  = document.getElementById('headerCheckBtn');
+    const info = document.getElementById('headerInfo');
+    const curlBlock = document.getElementById('headerCurl');
+
+    const HEADERS_OF_INTEREST = ['x-frame-options', 'content-security-policy', 'permissions-policy'];
+
+    btn.addEventListener('click', async () => {
+      const target = currentTarget();
+      if (!target) {
+        info.textContent = '⚠️ Set a target URL first.';
+        info.className = 'info-line warn';
+        return;
+      }
+      info.textContent = '⏳ Attempting to read response headers…';
+      info.className = 'info-line';
+      curlBlock.style.display = 'none';
+
+      try {
+        const res = await fetch(target, { method: 'HEAD', mode: 'cors' });
+        const found = HEADERS_OF_INTEREST.map(h => [h, res.headers.get(h)]).filter(([, v]) => v);
+
+        if (found.length === 0) {
+          info.innerHTML = '⚠️ Request succeeded but no framing-related headers were readable — either they\'re absent, or the target doesn\'t expose them via CORS. Verify with the command below.';
+          info.className = 'info-line warn';
+        } else {
+          info.innerHTML = `✅ Readable headers: ${found.map(([k, v]) => `<strong>${k}</strong>: ${v}`).join(' · ')}`;
+          info.className = 'info-line safe';
+        }
+      } catch (e) {
+        info.innerHTML = '⚠️ Browser CORS policy blocked reading headers cross-origin (expected for most sites). Use the command below instead.';
+        info.className = 'info-line warn';
+      }
+
+      curlBlock.style.display = 'block';
+      curlBlock.textContent =
+`curl -sI "${target}" | grep -iE "x-frame-options|content-security-policy|permissions-policy"
+
+# What to look for:
+#   X-Frame-Options: DENY | SAMEORIGIN         -> framing blocked / restricted
+#   Content-Security-Policy: frame-ancestors …  -> modern replacement, takes precedence
+#   No output at all                            -> likely vulnerable to framing`;
+
+      bumpTests();
+      markChecklist('chkHeaders', 'pass', 'checked');
+    });
+  })();
+
+  /* ==========================================================
+     6. Timing / multi-step bypass test
+     ========================================================== */
+  (function timingModule() {
+    const btn = document.getElementById('timingBtn');
+    const resetBtn = document.getElementById('timingResetBtn');
+    const info = document.getElementById('timingInfo');
+    let firstClickAt = null;
+
+    btn.addEventListener('click', () => {
+      if (firstClickAt === null) {
+        firstClickAt = performance.now();
+        btn.textContent = 'Click 2 of 2';
+        info.textContent = 'ℹ️ First click registered. Click again to complete the sequence.';
+        info.className = 'info-line';
+        return;
+      }
+      const elapsed = Math.round(performance.now() - firstClickAt);
+      firstClickAt = null;
+      btn.textContent = 'Click 1 of 2';
+      const fast = elapsed < 600;
+      info.textContent = `⏱️ Two-click sequence completed in ${elapsed}ms. ${fast ? 'That\'s fast enough that a repositioned overlay between clicks would likely go unnoticed — worth flagging if the real flow only needs a click, then a confirm click.' : 'Slower sequence — a moving overlay would be more likely to be noticed between clicks.'}`;
+      info.className = fast ? 'info-line warn' : 'info-line safe';
+      bumpTests();
+      markChecklist('chkTiming', 'pass', `${elapsed}ms`);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      firstClickAt = null;
+      btn.textContent = 'Click 1 of 2';
+      info.textContent = 'ℹ️ Not started.';
+      info.className = 'info-line';
+    });
+  })();
+
+  /* ==========================================================
+     7. Report checklist / summary
+     ========================================================== */
+  (function checklistModule() {
+    const copyBtn = document.getElementById('copySummaryBtn');
+
+    const framingEl = document.getElementById('chkFraming');
+    framingEl.style.cursor = 'pointer';
+    framingEl.title = 'Click to toggle manually';
+    framingEl.addEventListener('click', () => {
+      const isPending = framingEl.classList.contains('pending');
+      markChecklist('chkFraming', isPending ? 'pass' : 'pending', isPending ? 'ran' : 'pending');
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      const target = currentTarget() || '(not set)';
+      const items = Array.from(document.querySelectorAll('#checklist li')).map(li => {
+        const label = li.firstChild.textContent.trim();
+        const status = li.querySelector('.status').textContent.trim();
+        return `- [${status === 'pending' ? ' ' : 'x'}] ${label} — ${status}`;
+      });
+      const md = `## Clickjacking assessment — ${target}\n\n${items.join('\n')}\n\n_Generated by Clickjacking Validator_`;
+      try {
+        await navigator.clipboard.writeText(md);
+        copyBtn.textContent = '✅ Copied';
+        setTimeout(() => { copyBtn.textContent = '📋 Copy summary as Markdown'; }, 1600);
+      } catch (e) {
+        alert(md);
+      }
+    });
+  })();
+
+  currentTarget();
+})();
+</script>
 </body>
 </html>
