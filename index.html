@@ -120,7 +120,12 @@ a{color:var(--accent);}
   border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:13.5px;outline:none;
   transition:border-color .15s ease;
 }
-.field input:focus-visible{border-color:var(--accent);}
+.field select{
+  width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text-hi);
+  border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:13.5px;outline:none;
+  transition:border-color .15s ease;
+}
+.field input:focus-visible,.field select:focus-visible{border-color:var(--accent);}
 
 .row{display:flex;gap:12px;flex-wrap:wrap;}
 .row .field{flex:1;min-width:220px;}
@@ -239,6 +244,11 @@ pre.code{
   border:1px solid color-mix(in srgb, var(--warn) 50%, var(--line));color:var(--warn);
   border-radius:10px;padding:12px 14px;font-size:13px;margin:20px 0;
 }
+
+.sev-pill{font-family:var(--mono);font-size:10.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--text-lo);margin-left:8px;}
+.sev-pill.high{color:var(--danger);border-color:var(--danger);background:var(--danger-dim);}
+.sev-pill.medium{color:var(--warn);border-color:var(--warn);background:var(--warn-dim);}
+.sev-pill.info{color:var(--accent);border-color:var(--accent);background:var(--accent-dim);}
 </style>
 </head>
 <body>
@@ -305,7 +315,7 @@ pre.code{
     </div>
 
     <div class="foot">
-      <span>Classic single-frame test. Need nested frames, an overlay builder, drag-jacking, postMessage checks, or a header inspector? → <button class="linklike" data-goto="advanced">Advanced Lab</button></span>
+      <span>Classic single-frame test. Need nested frames, an overlay builder, drag-jacking, postMessage checks, a header inspector, sandbox tests, or a frame-busting detector? → <button class="linklike" data-goto="advanced">Advanced Lab</button></span>
     </div>
 
   </section>
@@ -318,7 +328,7 @@ pre.code{
     <div class="hero">
       <div class="eyebrow">Advanced test suite</div>
       <h1>🧪 Advanced Clickjacking Lab</h1>
-      <p>Six focused test modules for building a real clickjacking case: nested-frame bypass, an adjustable overlay PoC generator, drag-jacking, postMessage exposure, response-header analysis, and timing-based bypass.</p>
+      <p>Eight focused test modules for building a real clickjacking case: nested-frame bypass, an adjustable overlay PoC generator, drag-jacking, postMessage exposure, response-header analysis, timing-based bypass, sandbox-attribute isolation testing, and frame-busting behavior detection.</p>
     </div>
 
     <div class="readout">
@@ -337,7 +347,7 @@ pre.code{
     </div>
 
     <div class="warn-banner">
-      ⚠️ Only run these tests against systems you own or are explicitly authorized to assess. Nothing here bypasses real browser security — the framing and overlay tests simply visualize what an attacker-controlled page could construct, so you can document and report it.
+      ⚠️ Only run these tests against systems you own or are explicitly authorized to assess. Nothing here bypasses real browser security — the framing, overlay, sandbox, and detection tests simply visualize and probe what an attacker-controlled page could construct, so you can document and report it.
     </div>
 
     <!-- Global target -->
@@ -352,7 +362,7 @@ pre.code{
 
     <!-- 1. Nested frame bypass -->
     <div class="card">
-      <h2>🪆 Nested frame bypass test</h2>
+      <h2>🪆 Nested frame bypass test <span class="sev-pill medium">Medium</span></h2>
       <p class="desc">Frames the target three levels deep. Simple frame-busting scripts that only compare <code>top.location</code> to <code>self.location</code> can miss intermediate frames — this surfaces whether that gap exists.</p>
       <div class="btns">
         <button class="btn primary" id="nestedRunBtn">🔍 Run nested-frame test</button>
@@ -367,7 +377,7 @@ pre.code{
 
     <!-- 2. Overlay PoC builder -->
     <div class="card">
-      <h2>🎭 Overlay PoC builder</h2>
+      <h2>🎭 Overlay PoC builder <span class="sev-pill high">High</span></h2>
       <p class="desc">Position and fade a decoy control over the framed target, then export a standalone PoC file for your report.</p>
 
       <div class="field">
@@ -425,7 +435,7 @@ pre.code{
 
     <!-- 3. Drag & drop -->
     <div class="card">
-      <h2>🖱️ Drag-jacking simulator</h2>
+      <h2>🖱️ Drag-jacking simulator <span class="sev-pill medium">Medium</span></h2>
       <p class="desc">Some sites only guard against <em>clicks</em>, not drags. Drag the decoy chip onto the drop zone overlapping the framed target to check whether drag interactions reach through.</p>
       <div class="btns">
         <button class="btn ghost" id="dragResetBtn">↺ Reset</button>
@@ -441,7 +451,7 @@ pre.code{
 
     <!-- 4. postMessage tester -->
     <div class="card">
-      <h2>📡 postMessage exposure tester</h2>
+      <h2>📡 postMessage exposure tester <span class="sev-pill medium">Medium</span></h2>
       <p class="desc">Sends a benign probe message to the target frame with a wildcard <code>targetOrigin</code> and logs anything the target posts back. A target that responds to unsolicited, broadly-targeted messages is worth a closer look in your report.</p>
       <div class="btns">
         <button class="btn primary" id="pmSendBtn">📤 Send probe message</button>
@@ -452,7 +462,7 @@ pre.code{
 
     <!-- 5. Header inspector -->
     <div class="card">
-      <h2>📋 Response header inspector</h2>
+      <h2>📋 Response header inspector <span class="sev-pill info">Diagnostic</span></h2>
       <p class="desc">Checks for <code>X-Frame-Options</code>, <code>Content-Security-Policy: frame-ancestors</code>, and <code>Permissions-Policy</code>. Most sites don't send CORS headers that let a browser page read these cross-origin, so this falls back to a ready-to-run terminal command when the browser can't see them.</p>
       <div class="btns">
         <button class="btn primary" id="headerCheckBtn">🔍 Check headers</button>
@@ -463,7 +473,7 @@ pre.code{
 
     <!-- 6. Timing bypass -->
     <div class="card">
-      <h2>⏱️ Timing / multi-step bypass test</h2>
+      <h2>⏱️ Timing / multi-step bypass test <span class="sev-pill medium">Medium</span></h2>
       <p class="desc">Some confirmation flows only need two clicks in quick succession — a common bypass for defenses that expect a single deliberate click. This times a two-click sequence so you can note the window a real overlay would need.</p>
       <div class="btns">
         <button class="btn primary" id="timingBtn">Click 1 of 2</button>
@@ -472,7 +482,43 @@ pre.code{
       <div class="info-line" id="timingInfo">ℹ️ Not started.</div>
     </div>
 
-    <!-- 7. Report checklist -->
+    <!-- 7. Sandbox attribute test (NEW) -->
+    <div class="card">
+      <h2>🔐 Sandbox attribute test <span class="sev-pill info">Diagnostic</span></h2>
+      <p class="desc">Loads the target with different <code>sandbox</code> attribute combinations to identify <em>why</em> a target is or isn't protected. If the target still renders interactively under <code>allow-scripts</code> without <code>allow-top-navigation</code>, any frame-busting the target relies on is JS-based and would fail against an attacker who frames it inside a sandboxed iframe — meaning the real protection has to come from a response header, not client-side script.</p>
+      <div class="field">
+        <label>Sandbox preset</label>
+        <select id="sandboxPreset">
+          <option value="">No sandbox (baseline)</option>
+          <option value="allow-scripts">allow-scripts only — JS runs, but frame cannot navigate the top window</option>
+          <option value="allow-same-origin">allow-same-origin only — no script execution</option>
+          <option value="allow-scripts allow-same-origin">allow-scripts + allow-same-origin — known to let a frame escape its own sandbox restrictions</option>
+          <option value="allow-forms allow-scripts">allow-forms + allow-scripts — interactive forms, no top navigation</option>
+        </select>
+      </div>
+      <div class="btns">
+        <button class="btn primary" id="sandboxRunBtn">🔍 Load with sandbox</button>
+        <button class="btn ghost" id="sandboxResetBtn">↺ Reset</button>
+      </div>
+      <div class="info-line" id="sandboxInfo">ℹ️ Set a target above, pick a preset, then load.</div>
+      <div class="frame-shell" id="sandboxShell">
+        <span class="frame-label">sandboxed frame</span>
+        <iframe id="sandboxFrame" src="about:blank" title="sandboxed test frame"></iframe>
+      </div>
+    </div>
+
+    <!-- 8. Frame-busting behavior detector (NEW) -->
+    <div class="card">
+      <h2>🚨 Frame-busting behavior detector <span class="sev-pill info">Diagnostic</span></h2>
+      <p class="desc">Arms a watcher, then loads the target in the Overlay frame above. If the target attempts a top-level navigation to break out of the frame (the classic <code>if (top !== self) top.location = self.location</code> pattern), this validator page itself will unload or reload — which you'll see happen to <em>this tab</em>, not just the inner frame. That confirms active, JS-based anti-framing behavior worth noting alongside your header findings, since sandboxing (module 7) would neutralize it.</p>
+      <div class="btns">
+        <button class="btn primary" id="bustDetectBtn">🎯 Arm &amp; load target</button>
+        <button class="btn ghost" id="bustDetectResetBtn">↺ Disarm</button>
+      </div>
+      <div class="info-line" id="bustDetectInfo">ℹ️ Not armed.</div>
+    </div>
+
+    <!-- 9. Report checklist -->
     <div class="card">
       <h2>📝 Report checklist</h2>
       <p class="desc">Fills in automatically as you run tests above (click an item to toggle it manually too). Copy this straight into your findings write-up.</p>
@@ -484,6 +530,8 @@ pre.code{
         <li>postMessage probe <span class="status pending" id="chkPm">pending</span></li>
         <li>Response headers checked <span class="status pending" id="chkHeaders">pending</span></li>
         <li>Timing bypass test <span class="status pending" id="chkTiming">pending</span></li>
+        <li>Sandbox attribute test <span class="status pending" id="chkSandbox">pending</span></li>
+        <li>Frame-busting detector <span class="status pending" id="chkBust">pending</span></li>
       </ul>
       <div class="btns" style="margin-top:14px;">
         <button class="btn" id="copySummaryBtn">📋 Copy summary as Markdown</button>
@@ -808,6 +856,10 @@ pre.code{
     });
 
     renderDecoy();
+
+    // Exposed so the postMessage and frame-busting-detector modules can reuse the same live frame.
+    window.CJ_getOverlayFrame = () => frame;
+    window.CJ_getLoadedTarget = () => loadedTarget;
   })();
 
   /* ==========================================================
@@ -851,7 +903,6 @@ pre.code{
     const sendBtn  = document.getElementById('pmSendBtn');
     const clearBtn = document.getElementById('pmClearBtn');
     const log      = document.getElementById('pmLog');
-    const overlayFrame = document.getElementById('overlayFrame');
 
     function logEntry(text) {
       const time = new Date().toLocaleTimeString();
@@ -868,6 +919,7 @@ pre.code{
     });
 
     sendBtn.addEventListener('click', () => {
+      const overlayFrame = window.CJ_getOverlayFrame ? window.CJ_getOverlayFrame() : null;
       if (!overlayFrame || !overlayFrame.contentWindow || overlayFrame.src === 'about:blank') {
         logEntry('⚠️ No target loaded — load one via "Load target" in the Overlay builder above first.');
         return;
@@ -975,7 +1027,114 @@ pre.code{
   })();
 
   /* ==========================================================
-     7. Report checklist / summary
+     7. Sandbox attribute test (NEW)
+     ========================================================== */
+  (function sandboxModule() {
+    const preset   = document.getElementById('sandboxPreset');
+    const runBtn   = document.getElementById('sandboxRunBtn');
+    const resetBtn = document.getElementById('sandboxResetBtn');
+    const info     = document.getElementById('sandboxInfo');
+    const frame    = document.getElementById('sandboxFrame');
+
+    runBtn.addEventListener('click', () => {
+      const target = currentTarget();
+      if (!target) {
+        info.textContent = '⚠️ Set a target URL first.';
+        info.className = 'info-line warn';
+        return;
+      }
+      const sb = preset.value;
+      frame.src = 'about:blank';
+      if (sb) frame.setAttribute('sandbox', sb); else frame.removeAttribute('sandbox');
+
+      setTimeout(() => { frame.src = target; }, 80);
+
+      info.innerHTML = sb
+        ? `⏳ Loaded with <code>sandbox="${sb}"</code>. If the page renders and stays interactive here (with no top-level navigation attempted, since that's blocked without <code>allow-top-navigation</code>), it confirms the target's anti-framing behavior — if any — is client-side JS, not a response header. That's a meaningful distinction for your remediation recommendation: header-based (<code>X-Frame-Options</code> / CSP <code>frame-ancestors</code>) protection can't be sandboxed away by an attacker; JS-based frame-busting can.`
+        : '⏳ Loaded with no sandbox restriction (baseline for comparison against the presets above).';
+      info.className = 'info-line';
+      bumpTests();
+      markChecklist('chkSandbox', 'pass', sb || 'baseline');
+    });
+
+    resetBtn.addEventListener('click', () => {
+      frame.removeAttribute('sandbox');
+      frame.src = 'about:blank';
+      info.textContent = 'ℹ️ Set a target above, pick a preset, then load.';
+      info.className = 'info-line';
+    });
+  })();
+
+  /* ==========================================================
+     8. Frame-busting behavior detector (NEW)
+     ========================================================== */
+  (function frameBustDetectModule() {
+    const armBtn   = document.getElementById('bustDetectBtn');
+    const resetBtn = document.getElementById('bustDetectResetBtn');
+    const info     = document.getElementById('bustDetectInfo');
+    let armed = false;
+    let armTimer = null;
+
+    // If a previous arm session ended in an actual unload (a real breakout attempt),
+    // sessionStorage will still have the flag when this page reloads.
+    try {
+      if (sessionStorage.getItem('cj-bust-detected') === '1') {
+        sessionStorage.removeItem('cj-bust-detected');
+        info.innerHTML = '🚨 This tab reloaded/navigated shortly after arming on your last visit — that is consistent with the target attempting a top-level frame-busting redirect. Confirm by repeating the test and watching the tab.';
+        info.className = 'info-line danger';
+        markChecklist('chkBust', 'pass', 'breakout observed');
+      }
+    } catch (e) { /* sessionStorage unavailable — skip persistence, live detection still works */ }
+
+    window.addEventListener('beforeunload', () => {
+      if (armed) {
+        try { sessionStorage.setItem('cj-bust-detected', '1'); } catch (e) {}
+      }
+    });
+
+    armBtn.addEventListener('click', () => {
+      const target = currentTarget();
+      if (!target) {
+        info.textContent = '⚠️ Set a target URL first.';
+        info.className = 'info-line warn';
+        return;
+      }
+      const overlayFrame = window.CJ_getOverlayFrame ? window.CJ_getOverlayFrame() : null;
+      if (!overlayFrame) {
+        info.textContent = '⚠️ Overlay builder frame not found — load the target there first.';
+        info.className = 'info-line warn';
+        return;
+      }
+
+      armed = true;
+      overlayFrame.src = 'about:blank';
+      setTimeout(() => { overlayFrame.src = target; }, 80);
+
+      info.innerHTML = '🎯 Armed for 8s and loading the target in the Overlay frame above. <strong>Watch this browser tab</strong> — if it unloads, reloads, or redirects on its own in the next few seconds, that is the target attempting a top-level frame-busting navigation. If nothing happens to this tab, either the target does not attempt that redirect, or the browser is silently blocking it.';
+      info.className = 'info-line warn';
+      bumpTests();
+      markChecklist('chkBust', 'pass', 'armed');
+
+      clearTimeout(armTimer);
+      armTimer = setTimeout(() => {
+        if (armed) {
+          armed = false;
+          info.innerHTML = '✅ 8s window elapsed with no navigation of this tab. No top-level frame-busting attempt observed — protection (if present) is likely header-based rather than JS-based, or there is no anti-framing behavior at all. Cross-check with the Header inspector module above.';
+          info.className = 'info-line safe';
+        }
+      }, 8000);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      armed = false;
+      clearTimeout(armTimer);
+      info.textContent = 'ℹ️ Not armed.';
+      info.className = 'info-line';
+    });
+  })();
+
+  /* ==========================================================
+     9. Report checklist / summary
      ========================================================== */
   (function checklistModule() {
     const copyBtn = document.getElementById('copySummaryBtn');
