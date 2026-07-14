@@ -71,7 +71,6 @@ button.btn.ghost:hover{border-color:var(--accent);opacity:1;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* ---------- Result ---------- */
-#resultCard{display:none;}
 .verdict-banner{display:flex;align-items:center;gap:12px;padding:16px 18px;border-radius:12px;border:1px solid;margin-bottom:14px;transition:background .2s ease, border-color .2s ease;}
 .verdict-banner .vb-icon{font-size:26px;line-height:1;}
 .verdict-banner .vb-icon .spinner{width:18px;height:18px;border-width:2.5px;}
@@ -85,6 +84,8 @@ button.btn.ghost:hover{border-color:var(--accent);opacity:1;}
 .verdict-banner.inconclusive .vb-title{color:var(--warn);}
 .verdict-banner.checking{background:var(--accent-dim);border-color:var(--accent);}
 .verdict-banner.checking .vb-title{color:var(--accent);}
+.verdict-banner.idle{background:var(--panel-2);border-color:var(--line);}
+.verdict-banner.idle .vb-title{color:var(--text-hi);}
 
 .explain{font-size:13.5px;color:var(--text-lo);margin:0 0 14px;line-height:1.6;}
 .fixbox{display:none;background:var(--danger-dim);border:1px solid var(--danger);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text-hi);margin-bottom:14px;line-height:1.55;}
@@ -109,6 +110,8 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
   background:repeating-linear-gradient(45deg, var(--panel-2) 0 10px, var(--panel) 10px 20px);
 }
 .frame-shell iframe{display:block;width:100%;height:100%;border:0;background:#fff;}
+.frame-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:20px;background:var(--panel);font-family:var(--mono);font-size:12.5px;color:var(--text-lo);}
+.frame-placeholder .fp-icon{font-size:22px;opacity:.6;}
 .decoy-btn{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--body);font-weight:700;
   font-size:14px;border:none;border-radius:8px;padding:12px 22px;background:linear-gradient(135deg,#FFD166,#FF8A5B);
@@ -142,23 +145,23 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
   </div>
 
   <div class="card" id="resultCard">
-    <div class="verdict-banner" id="verdictBanner">
+    <div class="verdict-banner idle" id="verdictBanner">
       <div class="vb-icon" id="vbIcon">⚪</div>
       <div>
-        <div class="vb-title" id="vbTitle">Not tested</div>
-        <div class="vb-sub" id="vbSub"></div>
+        <div class="vb-title" id="vbTitle">Not tested yet</div>
+        <div class="vb-sub" id="vbSub">Enter a URL above and click Check.</div>
       </div>
     </div>
 
     <p class="explain" id="explainText"></p>
     <div class="fixbox" id="fixBox"></div>
 
-    <details class="tech">
+    <details class="tech" id="techDetails">
       <summary>Technical details</summary>
       <div class="tech-body">
-        <div class="tech-row" id="techMethod"></div>
+        <div class="tech-row" id="techMethod">Run a check to see the method used here.</div>
         <div class="tech-row" id="techHeaders"></div>
-        <pre class="code" id="techCurl"></pre>
+        <pre class="code" id="techCurl" style="display:none;"></pre>
         <label class="proxy-row"><input type="checkbox" id="proxyToggle" checked> Use a public CORS-proxy relay if headers can't be read directly (routes the URL through a third party — turn off for confidential targets; each attempt times out after 4.5s so it can't hang)</label>
       </div>
     </details>
@@ -166,6 +169,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     <div class="preview-label">Live preview — this is what an embedding page would see:</div>
     <div class="frame-shell" id="frameShell">
       <iframe id="previewFrame" src="about:blank" title="Clickjacking preview"></iframe>
+      <div class="frame-placeholder" id="framePlaceholder"><span class="fp-icon">🖼️</span>Preview will load here once you run a check</div>
     </div>
     <div class="overlay-toggle-row">
       <button class="btn ghost" id="overlayBtn">🎭 Show overlay attack example</button>
@@ -270,7 +274,8 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
   const FIX_TEXT = "Add the response header <code>Content-Security-Policy: frame-ancestors 'self'</code> (or <code>'none'</code>, or a trusted-origin allow-list) — or the older <code>X-Frame-Options: DENY</code> — to stop this page from being framed.";
 
   function showChecking() {
-    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('framePlaceholder').style.display = 'none';
+    document.getElementById('techCurl').style.display = 'none';
     document.getElementById('verdictBanner').className = 'verdict-banner checking';
     document.getElementById('vbIcon').innerHTML = '<span class="spinner"></span>';
     document.getElementById('vbTitle').textContent = VERDICTS.checking.title;
@@ -312,7 +317,9 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     document.getElementById('techHeaders').innerHTML = result.found.length
       ? `<b>Headers found:</b> ${result.found.map(([k, val]) => `${escapeHtml(k)}: ${escapeHtml(val)}`).join(' · ')}`
       : `<b>Headers found:</b> none`;
-    document.getElementById('techCurl').textContent = buildCurlCmd(target);
+    const curlEl = document.getElementById('techCurl');
+    curlEl.textContent = buildCurlCmd(target);
+    curlEl.style.display = 'block';
   }
 
   let decoyEl = null;
