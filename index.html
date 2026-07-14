@@ -3,473 +3,181 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Clickjacking Validator</title>
+<title>Clickjacking Checker</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root{
-  --ink:#0A0E13; --panel:#121821; --panel-2:#171F2A; --line:#232C38;
+  --ink:#0B0F14; --panel:#121821; --panel-2:#171F2A; --line:#232C38;
   --text-hi:#E9EFF5; --text-lo:#8592A0;
-  --accent:#5EA1FF; --accent-dim:rgba(94,161,255,.14); --accent-hi:#8DBFFF;
+  --accent:#5EA1FF; --accent-dim:rgba(94,161,255,.14);
   --danger:#FF5D5D; --danger-dim:rgba(255,93,93,.14);
   --safe:#34D399; --safe-dim:rgba(52,211,153,.14);
   --warn:#FFB020; --warn-dim:rgba(255,176,32,.14);
   --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --body:'Inter', system-ui, -apple-system, sans-serif;
-  --radius:10px; --shadow:0 20px 50px -20px rgba(0,0,0,.6);
+  --radius:14px; --shadow:0 24px 60px -24px rgba(0,0,0,.55);
 }
 [data-theme="light"]{
-  --ink:#F4F6F9; --panel:#FFFFFF; --panel-2:#F0F3F7; --line:#DCE2E9;
+  --ink:#F4F6F9; --panel:#FFFFFF; --panel-2:#F0F3F7; --line:#DDE3EA;
   --text-hi:#111826; --text-lo:#5B6672;
-  --accent:#2F6FE0; --accent-dim:rgba(47,111,224,.10); --accent-hi:#1E56BE;
-  --shadow:0 20px 50px -25px rgba(20,30,50,.25);
+  --accent:#2F6FE0; --accent-dim:rgba(47,111,224,.10);
+  --shadow:0 24px 60px -28px rgba(20,30,50,.25);
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
-  background:radial-gradient(1200px 600px at 15% -10%, var(--accent-dim), transparent 60%), var(--ink);
-  color:var(--text-hi); font-family:var(--body); line-height:1.55; min-height:100vh;
+  background:radial-gradient(1100px 560px at 20% -10%, var(--accent-dim), transparent 60%), var(--ink);
+  color:var(--text-hi); font-family:var(--body); line-height:1.6; min-height:100vh;
   transition:background .25s ease,color .25s ease;
 }
-a{color:var(--accent);}
 code{font-family:var(--mono);background:var(--panel-2);padding:1px 5px;border-radius:4px;font-size:.9em;}
-::selection{background:var(--accent-dim);color:var(--text-hi);}
-.wrap{max-width:960px;margin:0 auto;padding:0 24px 80px;}
 
-/* ---------- Top bar ---------- */
-.tabbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:14px 24px;background:color-mix(in srgb, var(--ink) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
-.brand{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:600;letter-spacing:.02em;font-size:15px;white-space:nowrap;}
-.brand .glyph{font-size:18px;}
-.tabs{display:flex;gap:4px;margin-left:auto;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;}
-.tab{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text-lo);border:none;background:transparent;cursor:pointer;padding:7px 16px;border-radius:999px;transition:background .15s ease,color .15s ease;}
-.tab:hover{color:var(--text-hi);}
-.tab.active{background:var(--accent);color:#06101F;}
-[data-theme="light"] .tab.active{color:#fff;}
-.icon-btn{border:1px solid var(--line);background:var(--panel);color:var(--text-hi);border-radius:999px;padding:7px 12px;font-family:var(--mono);font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:border-color .15s ease;white-space:nowrap;}
-.icon-btn:hover{border-color:var(--accent);}
-.theme-toggle{width:36px;height:36px;padding:0;justify-content:center;border-radius:999px;font-size:15px;}
+.topbar{display:flex;align-items:center;gap:10px;max-width:640px;margin:0 auto;padding:28px 24px 0;}
+.topbar .brand{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-weight:600;font-size:14.5px;letter-spacing:.01em;}
+.theme-toggle{margin-left:auto;width:34px;height:34px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--text-hi);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:border-color .15s ease;}
+.theme-toggle:hover{border-color:var(--accent);}
 
-/* ---------- Panels ---------- */
-.panel{display:none;}
-.panel.active{display:block;}
+.wrap{max-width:640px;margin:0 auto;padding:18px 24px 70px;}
 
-/* ---------- Headings ---------- */
-.hero{padding:36px 0 8px;}
-.hero h1{font-size:26px;margin:0 0 6px;letter-spacing:-0.01em;}
-.hero p{color:var(--text-lo);margin:0;max-width:62ch;font-size:14.5px;}
-.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;}
-.eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}
+.hero{padding:16px 0 26px;text-align:center;}
+.hero h1{font-size:27px;margin:0 0 8px;letter-spacing:-0.01em;}
+.hero p{color:var(--text-lo);margin:0;font-size:14.5px;}
 
-/* ---------- Cards ---------- */
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin:18px 0;box-shadow:var(--shadow);}
-.card h2{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.card .desc{color:var(--text-lo);font-size:13.5px;margin:0 0 14px;}
-.kind-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-lo);border:1px solid var(--line);border-radius:999px;padding:2px 9px;margin-left:auto;white-space:nowrap;}
-.kind-tag.verdict{color:var(--accent);border-color:var(--accent);}
-.kind-tag.manual{color:var(--warn);border-color:var(--warn);}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:16px;box-shadow:var(--shadow);}
 
-.field{margin-bottom:14px;}
-.field label{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--text-lo);margin-bottom:6px;letter-spacing:.02em;}
-.field input[type="text"],.field textarea{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text-hi);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:13.5px;outline:none;transition:border-color .15s ease;}
-.field textarea{resize:vertical;}
-.field input:focus-visible,.field textarea:focus-visible{border-color:var(--accent);}
-.check-row{display:flex;align-items:flex-start;gap:8px;font-family:var(--mono);font-size:12px;color:var(--text-lo);margin:4px 0 14px;line-height:1.5;}
-.check-row input{accent-color:var(--accent);margin-top:2px;}
-
-.row{display:flex;gap:12px;flex-wrap:wrap;}
-.row .field{flex:1;min-width:220px;}
-.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;align-items:center;}
-
-button.btn{font-family:var(--mono);font-size:13px;font-weight:600;border-radius:8px;padding:10px 16px;border:1px solid var(--line);background:var(--panel-2);color:var(--text-hi);cursor:pointer;transition:transform .1s ease, border-color .15s ease, background .15s ease;display:inline-flex;align-items:center;gap:8px;}
-button.btn:hover{border-color:var(--accent);}
+.input-row{display:flex;gap:10px;flex-wrap:wrap;}
+.input-row input{
+  flex:1;min-width:200px;background:var(--panel-2);border:1px solid var(--line);color:var(--text-hi);
+  border-radius:10px;padding:13px 15px;font-family:var(--mono);font-size:14px;outline:none;
+  transition:border-color .15s ease;
+}
+.input-row input:focus-visible{border-color:var(--accent);}
+button.btn{
+  font-family:var(--mono);font-size:13.5px;font-weight:600;border-radius:10px;padding:13px 20px;
+  border:1px solid var(--accent);background:var(--accent);color:#06101F;cursor:pointer;
+  transition:transform .1s ease, opacity .15s ease;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+}
+[data-theme="light"] button.btn{color:#fff;}
+button.btn:hover{opacity:.92;}
 button.btn:active{transform:scale(.97);}
-button.btn.primary{background:var(--accent);border-color:var(--accent);color:#06101F;}
-[data-theme="light"] button.btn.primary{color:#fff;}
-button.btn.danger{border-color:var(--danger);color:var(--danger);}
-button.btn.danger:hover{background:var(--danger-dim);}
-button.btn.ghost{background:transparent;}
 button.btn:disabled{opacity:.5;cursor:not-allowed;}
+button.btn.ghost{background:transparent;color:var(--text-hi);border-color:var(--line);}
+button.btn.ghost:hover{border-color:var(--accent);opacity:1;}
 
-/* ---------- Frame area ---------- */
-.frame-shell{position:relative;margin-top:14px;border:1px dashed var(--line);border-radius:10px;overflow:hidden;background:repeating-linear-gradient(45deg, var(--panel-2) 0 10px, var(--panel) 10px 20px);height:340px;}
-.frame-shell iframe{display:block;width:100%;height:100%;border:0;background:#fff;}
-.frame-label{position:absolute;top:8px;left:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.55);color:#fff;padding:3px 8px;border-radius:999px;z-index:5;pointer-events:none;}
+.status-line{display:flex;align-items:center;gap:8px;margin-top:14px;font-family:var(--mono);font-size:12.5px;color:var(--text-lo);min-height:18px;}
+.status-line.hidden{display:none;}
+.spinner{width:12px;height:12px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-.info-line{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--text-lo);margin-top:12px;font-family:var(--mono);}
-.info-line.warn{color:var(--warn);}
-.info-line.safe{color:var(--safe);}
+/* ---------- Result ---------- */
+#resultCard{display:none;}
+.verdict-banner{display:flex;align-items:center;gap:12px;padding:16px 18px;border-radius:12px;border:1px solid;margin-bottom:14px;}
+.verdict-banner .vb-icon{font-size:26px;line-height:1;}
+.verdict-banner .vb-title{font-family:var(--mono);font-weight:700;font-size:15px;margin-bottom:2px;}
+.verdict-banner .vb-sub{font-size:12.5px;color:var(--text-lo);}
+.verdict-banner.vulnerable{background:var(--danger-dim);border-color:var(--danger);}
+.verdict-banner.vulnerable .vb-title{color:var(--danger);}
+.verdict-banner.protected{background:var(--safe-dim);border-color:var(--safe);}
+.verdict-banner.protected .vb-title{color:var(--safe);}
+.verdict-banner.inconclusive{background:var(--warn-dim);border-color:var(--warn);}
+.verdict-banner.inconclusive .vb-title{color:var(--warn);}
 
-/* ---------- Verdict badges ---------- */
-.verdict{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-weight:700;font-size:12px;padding:6px 12px;border-radius:999px;border:1px solid;white-space:nowrap;}
-.verdict.idle{color:var(--text-lo);border-color:var(--line);background:var(--panel-2);}
-.verdict.vulnerable{color:var(--danger);border-color:var(--danger);background:var(--danger-dim);}
-.verdict.protected{color:var(--safe);border-color:var(--safe);background:var(--safe-dim);}
-.verdict.inconclusive{color:var(--warn);border-color:var(--warn);background:var(--warn-dim);}
-.verdict.info{color:var(--accent);border-color:var(--accent);background:var(--accent-dim);}
-.verdict.big{font-size:14px;padding:9px 16px;}
-.verdict-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;}
-
-/* ---------- Fix / note boxes ---------- */
-.fixbox{display:none;margin-top:10px;border-radius:8px;padding:10px 12px;font-size:12.5px;font-family:var(--mono);line-height:1.5;}
+.explain{font-size:13.5px;color:var(--text-lo);margin:0 0 14px;line-height:1.6;}
+.fixbox{display:none;background:var(--danger-dim);border:1px solid var(--danger);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text-hi);margin-bottom:14px;line-height:1.55;}
 .fixbox.show{display:block;}
-.fixbox.sev-vulnerable{background:var(--danger-dim);border:1px solid var(--danger);color:var(--text-hi);}
-.fixbox.sev-inconclusive{background:var(--warn-dim);border:1px solid var(--warn);color:var(--text-hi);}
-.fixbox.sev-info{background:var(--accent-dim);border:1px solid var(--accent);color:var(--text-hi);}
+.fixbox strong{color:var(--danger);}
+.fixbox.warn{background:var(--warn-dim);border-color:var(--warn);}
+.fixbox.warn strong{color:var(--warn);}
 
-/* ---------- Overlay decoy ---------- */
-.decoy-btn{position:absolute;font-family:var(--body);font-weight:700;font-size:14px;border:none;border-radius:8px;padding:12px 22px;background:linear-gradient(135deg,#FFD166,#FF8A5B);color:#221200;cursor:pointer;box-shadow:0 10px 24px -8px rgba(255,138,91,.6);z-index:6;}
+details.tech{margin-bottom:16px;}
+details.tech summary{cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--text-lo);user-select:none;}
+details.tech summary:hover{color:var(--text-hi);}
+.tech-body{margin-top:10px;}
+pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:11.5px;overflow-x:auto;color:var(--text-hi);white-space:pre-wrap;word-break:break-word;margin:0 0 10px;}
+.tech-row{font-family:var(--mono);font-size:12px;color:var(--text-lo);margin-bottom:4px;}
+.tech-row b{color:var(--text-hi);}
+.proxy-row{display:flex;align-items:flex-start;gap:7px;font-family:var(--mono);font-size:11.5px;color:var(--text-lo);margin-top:10px;line-height:1.5;}
+.proxy-row input{accent-color:var(--accent);margin-top:2px;}
 
-/* ---------- Footer ---------- */
-.foot{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);color:var(--text-lo);font-size:12.5px;display:flex;gap:8px;}
-.foot button.linklike{background:none;border:none;padding:0;color:var(--accent);cursor:pointer;font-size:12.5px;text-decoration:underline;font-family:inherit;}
+.preview-label{font-family:var(--mono);font-size:12px;color:var(--text-lo);margin-bottom:8px;}
+.frame-shell{
+  position:relative;border:1px dashed var(--line);border-radius:10px;overflow:hidden;height:300px;
+  background:repeating-linear-gradient(45deg, var(--panel-2) 0 10px, var(--panel) 10px 20px);
+}
+.frame-shell iframe{display:block;width:100%;height:100%;border:0;background:#fff;}
+.decoy-btn{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--body);font-weight:700;
+  font-size:14px;border:none;border-radius:8px;padding:12px 22px;background:linear-gradient(135deg,#FFD166,#FF8A5B);
+  color:#221200;cursor:pointer;box-shadow:0 10px 24px -8px rgba(255,138,91,.6);z-index:5;opacity:.92;
+}
+.overlay-toggle-row{margin-top:12px;}
 
-/* ---------- Scanner ---------- */
-.scan-progress{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:14px;}
-.scan-progress-fill{height:100%;width:0%;background:var(--accent);transition:width .3s ease;}
-.scan-console{margin-top:12px;background:#04070a;border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:12px;max-height:230px;overflow-y:auto;color:#9FE7B8;}
-.scan-console .entry{padding:2px 0;white-space:pre-wrap;word-break:break-word;}
-.scan-console .entry.muted{color:#5B6672;}
-
-/* ---------- Dashboard ---------- */
-.dash-summary{display:flex;gap:26px;flex-wrap:wrap;margin:4px 0 16px;padding:14px 16px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;}
-.dash-summary-item .k{display:block;font-family:var(--mono);font-size:10px;color:var(--text-lo);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}
-.dash-summary-item .v{font-family:var(--mono);font-size:13px;color:var(--text-hi);}
-.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:12px;}
-.dash-tile{border:1px solid var(--line);border-left:3px solid var(--line);border-radius:10px;padding:14px;background:var(--panel-2);transition:border-color .2s ease;}
-.dash-tile .dt-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
-.dash-tile .dt-name{font-family:var(--mono);font-size:12px;color:var(--text-hi);font-weight:600;}
-.dash-tile .dt-detail{font-size:11.5px;color:var(--text-lo);min-height:14px;}
-.dash-tile .dt-fix{display:none;margin-top:8px;font-size:11px;line-height:1.5;color:var(--warn);background:var(--warn-dim);border:1px solid var(--warn);border-radius:6px;padding:6px 8px;font-family:var(--mono);}
-.overall-suggestions{display:none;margin-top:16px;background:var(--danger-dim);border:1px solid var(--danger);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--text-hi);}
-.overall-suggestions strong{color:var(--danger);}
-.overall-suggestions ul{margin:8px 0 0;padding-left:18px;}
-.overall-suggestions li{margin-bottom:6px;font-size:12.5px;}
-.report-img-wrap{display:none;margin-top:16px;}
-.report-img-wrap img{width:100%;max-width:520px;border-radius:10px;border:1px solid var(--line);display:block;}
-
-/* ---------- Misc test UI ---------- */
-.slider-row{display:flex;align-items:center;gap:12px;}
-.slider-row input[type="range"]{flex:1;accent-color:var(--accent);}
-.slider-row .val{font-family:var(--mono);font-size:12px;color:var(--accent);min-width:44px;text-align:right;}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-@media (max-width:640px){.grid-2{grid-template-columns:1fr;}}
-.draggable{cursor:grab;user-select:none;padding:10px 16px;border-radius:8px;background:linear-gradient(135deg,#FFD166,#FF8A5B);color:#221200;font-weight:700;font-size:13px;display:inline-flex;width:fit-content;}
-.drop-zone{margin-top:12px;border:1.5px dashed var(--line);border-radius:10px;min-height:90px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--text-lo);text-align:center;padding:10px;transition:border-color .15s ease, background .15s ease;}
-.drop-zone.over{border-color:var(--accent);background:var(--accent-dim);color:var(--accent);}
-.log{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:11.5px;max-height:160px;overflow-y:auto;color:var(--text-lo);}
-.log .entry{padding:4px 0;border-bottom:1px dashed var(--line);word-break:break-word;}
-.log .entry:last-child{border-bottom:none;}
-.log .entry .t{color:var(--accent);}
-pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:14px;font-family:var(--mono);font-size:12px;overflow-x:auto;color:var(--text-hi);white-space:pre-wrap;word-break:break-word;}
-.warn-banner{display:flex;gap:10px;align-items:flex-start;background:var(--warn-dim);border:1px solid color-mix(in srgb, var(--warn) 50%, var(--line));color:var(--warn);border-radius:10px;padding:12px 14px;font-size:13px;margin:20px 0;}
-.why-box{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--text-lo);margin-bottom:14px;}
-.why-box strong{color:var(--text-hi);}
-.why-box p{margin:0 0 6px;}
-.why-box p:last-child{margin-bottom:0;}
-
-/* ---------- Guide drawer ---------- */
-.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:90;}
-.drawer-overlay.open{opacity:1;pointer-events:auto;}
-.drawer{position:fixed;top:0;right:0;height:100%;width:380px;max-width:88vw;background:var(--panel);border-left:1px solid var(--line);transform:translateX(100%);transition:transform .25s ease;z-index:95;overflow-y:auto;padding:22px;box-shadow:-20px 0 50px -20px rgba(0,0,0,.6);}
-.drawer.open{transform:translateX(0);}
-.drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
-.drawer h3{font-size:14px;margin:20px 0 6px;display:flex;gap:8px;align-items:center;color:var(--text-hi);}
-.drawer h3:first-of-type{margin-top:0;}
-.drawer p{font-size:12.5px;color:var(--text-lo);margin:0 0 4px;line-height:1.6;}
-.drawer .close-btn{background:none;border:none;color:var(--text-lo);font-size:20px;cursor:pointer;line-height:1;}
-.drawer .close-btn:hover{color:var(--text-hi);}
+.footnote{text-align:center;color:var(--text-lo);font-size:12px;margin-top:8px;}
 </style>
 </head>
 <body>
 
-<nav class="tabbar">
-  <div class="brand"><span class="glyph">🛡️</span> Clickjacking Validator</div>
-  <div class="tabs">
-    <button class="tab active" id="tabBtnClassic" data-panel="classic">Classic Test</button>
-    <button class="tab" id="tabBtnAdvanced" data-panel="advanced">Advanced Lab</button>
-  </div>
-  <button class="icon-btn" id="guideBtn">📖 Guide</button>
-  <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
-</nav>
+<div class="topbar">
+  <div class="brand">🛡️ Clickjacking Checker</div>
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+</div>
 
 <div class="wrap">
 
-  <!-- ============ Smart Scanner (persistent) ============ -->
-  <div class="card" id="scannerCard">
-    <h2>🔎 Smart Scanner <span class="kind-tag verdict">automated</span></h2>
-    <p class="desc">One click runs the header, classic-frame, nested-frame, overlay-preview and postMessage checks automatically. Drag-jacking and the timing test need a real mouse gesture, so they're flagged for manual follow-up in the Advanced tab.</p>
-
-    <div class="field"><label>🔗 Target URL</label><input type="text" id="globalTarget" placeholder="https://example.com"></div>
-
-    <label class="check-row"><input type="checkbox" id="useProxyToggle" checked> Auto-check headers via public CORS-proxy relay when direct access is blocked (routes the target URL through a third-party service — turn off for confidential engagements and use the manual curl option in the Header Inspector instead)</label>
-
-    <div class="btns">
-      <button class="btn primary" id="scanBtn">🔎 Run Full Scan</button>
-      <button class="btn ghost" id="scanClearBtn">🧹 Clear console</button>
-    </div>
-
-    <div class="scan-progress"><div class="scan-progress-fill" id="scanProgressFill"></div></div>
-    <div class="scan-console" id="scanConsole"><div class="entry muted">Console output will appear here once you run a scan.</div></div>
+  <div class="hero">
+    <h1>Is this page vulnerable to clickjacking?</h1>
+    <p>Paste a URL. It checks the response headers and loads a live preview automatically — no setup, no steps.</p>
   </div>
 
-  <!-- ============ Dashboard (persistent) ============ -->
-  <div class="card" id="dashboardCard">
-    <h2>📊 Vulnerability Dashboard</h2>
-    <p class="desc">Updates automatically as the scan runs (or as you use the Advanced tab manually). 🔴 vulnerable · 🟢 protected · 🟡 needs a manual check · 🔵 informational.</p>
+  <div class="card">
+    <div class="input-row">
+      <input type="text" id="urlInput" placeholder="https://example.com" autocomplete="off">
+      <button class="btn" id="checkBtn">🔍 Check</button>
+    </div>
+    <div class="status-line hidden" id="statusLine"><span class="spinner"></span><span id="statusText"></span></div>
+  </div>
 
-    <div class="dash-summary">
-      <div class="dash-summary-item"><span class="k">Overall verdict</span><span class="verdict idle big" id="overallVerdict">⚪ Not tested yet</span></div>
-      <div class="dash-summary-item"><span class="k">Target</span><span class="v" id="gsTarget">— not set —</span></div>
-      <div class="dash-summary-item"><span class="k">Tests run</span><span class="v" id="gsCount">0</span></div>
+  <div class="card" id="resultCard">
+    <div class="verdict-banner" id="verdictBanner">
+      <div class="vb-icon" id="vbIcon">⚪</div>
+      <div>
+        <div class="vb-title" id="vbTitle">Not tested</div>
+        <div class="vb-sub" id="vbSub"></div>
+      </div>
     </div>
 
-    <div class="dash-grid" id="dashGrid">
-      <div class="dash-tile" id="dash-tile-classic"><div class="dt-head"><span class="dt-name">🛡️ Classic framing</span><span class="verdict idle" id="dash-verdict-classic">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-classic">Not run yet.</div><div class="dt-fix" id="dash-fix-classic"></div></div>
-      <div class="dash-tile" id="dash-tile-nested"><div class="dt-head"><span class="dt-name">🪆 Nested-frame</span><span class="verdict idle" id="dash-verdict-nested">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-nested">Not run yet.</div><div class="dt-fix" id="dash-fix-nested"></div></div>
-      <div class="dash-tile" id="dash-tile-headers"><div class="dt-head"><span class="dt-name">📋 Response headers</span><span class="verdict idle" id="dash-verdict-headers">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-headers">Not run yet.</div><div class="dt-fix" id="dash-fix-headers"></div></div>
-      <div class="dash-tile" id="dash-tile-overlay"><div class="dt-head"><span class="dt-name">🎭 Overlay PoC</span><span class="verdict idle" id="dash-verdict-overlay">⚪ Not built</span></div><div class="dt-detail" id="dash-detail-overlay">Not built yet.</div><div class="dt-fix" id="dash-fix-overlay"></div></div>
-      <div class="dash-tile" id="dash-tile-drag"><div class="dt-head"><span class="dt-name">🖱️ Drag-jacking</span><span class="verdict idle" id="dash-verdict-drag">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-drag">Manual — see Advanced tab.</div><div class="dt-fix" id="dash-fix-drag"></div></div>
-      <div class="dash-tile" id="dash-tile-postmsg"><div class="dt-head"><span class="dt-name">📡 postMessage</span><span class="verdict idle" id="dash-verdict-postmsg">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-postmsg">Not run yet.</div><div class="dt-fix" id="dash-fix-postmsg"></div></div>
-      <div class="dash-tile" id="dash-tile-timing"><div class="dt-head"><span class="dt-name">⏱️ Timing bypass</span><span class="verdict idle" id="dash-verdict-timing">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-timing">Manual — see Advanced tab.</div><div class="dt-fix" id="dash-fix-timing"></div></div>
+    <p class="explain" id="explainText"></p>
+    <div class="fixbox" id="fixBox"></div>
+
+    <details class="tech">
+      <summary>Technical details</summary>
+      <div class="tech-body">
+        <div class="tech-row" id="techMethod"></div>
+        <div class="tech-row" id="techHeaders"></div>
+        <pre class="code" id="techCurl"></pre>
+        <label class="proxy-row"><input type="checkbox" id="proxyToggle" checked> Use a public CORS-proxy relay if headers can't be read directly (routes the URL through a third party — turn off for confidential targets)</label>
+      </div>
+    </details>
+
+    <div class="preview-label">Live preview — this is what an embedding page would see:</div>
+    <div class="frame-shell" id="frameShell">
+      <iframe id="previewFrame" src="about:blank" title="Clickjacking preview"></iframe>
     </div>
-
-    <div class="overall-suggestions" id="overallSuggestions"></div>
-
-    <div class="btns" style="margin-top:16px;">
-      <button class="btn primary" id="genImageBtn">🖼️ Generate report image</button>
-      <button class="btn" id="downloadImgBtn">⬇️ Download PNG</button>
-      <button class="btn" id="copySummaryBtn">📋 Copy Markdown</button>
-      <button class="btn ghost" id="downloadMdBtn">⬇️ Download Markdown</button>
-    </div>
-
-    <div class="report-img-wrap" id="reportImgWrap">
-      <img id="reportImgPreview" alt="Clickjacking assessment report preview">
+    <div class="overlay-toggle-row">
+      <button class="btn ghost" id="overlayBtn">🎭 Show overlay attack example</button>
     </div>
   </div>
 
-  <!-- =========================================================
-       PANEL 1 — Classic test
-       ========================================================= -->
-  <section class="panel active" id="panel-classic">
+  <div class="footnote">🔒 For educational and authorized security testing only.</div>
 
-    <div class="hero">
-      <div class="eyebrow">Frame &amp; overlay demo</div>
-      <h1>🛡️ Clickjacking Validator</h1>
-      <p>Enter two URLs: one for display, one for the iframe source. Watch for framing &amp; simulate an overlay attack. Or just use the Smart Scanner above.</p>
-    </div>
-
-    <div class="card">
-      <h2>🏷️ Test setup <span class="kind-tag verdict">verdict test</span></h2>
-      <p class="desc">The display URL is shown for reference only. The iframe source is what actually gets framed below.</p>
-
-      <div class="row">
-        <div class="field"><label>🏷️ Display URL</label><input type="text" id="displayUrl" placeholder="https://example.com"></div>
-        <div class="field"><label>🔗 Iframe Source URL</label><input type="text" id="iframeUrl" placeholder="https://example.com"></div>
-      </div>
-
-      <div class="btns">
-        <button class="btn primary" id="testBtn">🔍 Test framing</button>
-        <button class="btn ghost" id="resetBtn">↺ Reset</button>
-        <button class="btn" id="overlayBtn">🎭 Overlay attack</button>
-      </div>
-
-      <div class="info-line" id="infoLine"><span>ℹ️ Enter URLs and click <strong>Test framing</strong>, then look at the frame below.</span></div>
-
-      <div class="frame-shell" id="frameShell">
-        <span class="frame-label">iframe preview</span>
-        <iframe id="testFrame" src="about:blank" title="Clickjacking test frame"></iframe>
-      </div>
-
-      <div class="btns" id="classicConfirmBtns" style="display:none;margin-top:12px;">
-        <span style="font-family:var(--mono);font-size:12px;color:var(--text-lo);">What do you see above?</span>
-        <button class="btn danger" id="classicMarkVuln">👁️ Real content — Vulnerable</button>
-        <button class="btn ghost" id="classicMarkProtected">🚫 Blank / blocked — Protected</button>
-      </div>
-
-      <div class="verdict-row"><span class="verdict idle" id="verdict-classic">⚪ Not tested</span></div>
-      <div class="fixbox" id="fix-classic"></div>
-    </div>
-
-    <div class="warn-banner">🔒 This tool is for educational and authorized security testing only. Always obtain permission before testing a target that isn't yours.</div>
-
-    <div class="foot"><span>Need nested frames, an overlay builder, drag-jacking, postMessage checks, or a header inspector? → <button class="linklike" data-goto="advanced">Advanced Lab</button></span></div>
-
-  </section>
-
-  <!-- =========================================================
-       PANEL 2 — Advanced lab
-       ========================================================= -->
-  <section class="panel" id="panel-advanced">
-
-    <div class="hero">
-      <div class="eyebrow">Advanced test suite</div>
-      <h1>🧪 Advanced Clickjacking Lab</h1>
-      <p>Granular controls behind the Smart Scanner above — useful for re-running one check, or for the two tests that need your hands on the mouse.</p>
-    </div>
-
-    <div class="warn-banner">⚠️ Only run these tests against systems you own or are explicitly authorized to assess.</div>
-
-    <!-- 1. Nested frame bypass -->
-    <div class="card">
-      <h2>🪆 Nested frame bypass test <span class="kind-tag verdict">verdict test</span></h2>
-      <p class="desc">Frames the target three levels deep. Simple frame-busting scripts that only compare <code>top.location</code> to <code>self.location</code> can miss intermediate frames.</p>
-      <div class="btns">
-        <button class="btn primary" id="nestedRunBtn">🔍 Run nested-frame test</button>
-        <button class="btn ghost" id="nestedResetBtn">↺ Reset</button>
-      </div>
-      <div class="info-line" id="nestedInfo">ℹ️ Set a target in the Smart Scanner above, then run the test.</div>
-      <div class="frame-shell" id="nestedShell">
-        <span class="frame-label">depth 1 → 2 → 3</span>
-        <iframe id="nestedFrame1" src="about:blank" title="nested frame depth 1"></iframe>
-      </div>
-      <div class="btns" id="nestedConfirmBtns" style="display:none;margin-top:12px;">
-        <span style="font-family:var(--mono);font-size:12px;color:var(--text-lo);">What's visible at the innermost frame?</span>
-        <button class="btn danger" id="nestedMarkVuln">👁️ Real content — Vulnerable</button>
-        <button class="btn ghost" id="nestedMarkProtected">🚫 Blank / blocked — Protected</button>
-      </div>
-      <div class="verdict-row"><span class="verdict idle" id="verdict-nested">⚪ Not tested</span></div>
-      <div class="fixbox" id="fix-nested"></div>
-    </div>
-
-    <!-- 2. Overlay PoC builder -->
-    <div class="card">
-      <h2>🎭 Overlay PoC builder <span class="kind-tag">poc builder</span></h2>
-      <p class="desc">Position and fade a decoy control over the framed target, then launch or export a standalone PoC for your report.</p>
-
-      <div class="field"><label>🏷️ Decoy button text</label><input type="text" id="decoyText" value="🎁 CLAIM FREE REWARD"></div>
-
-      <div class="grid-2">
-        <div class="field"><label>Horizontal position</label><div class="slider-row"><input type="range" id="decoyX" min="0" max="100" value="50"><span class="val" id="decoyXVal">50%</span></div></div>
-        <div class="field"><label>Vertical position</label><div class="slider-row"><input type="range" id="decoyY" min="0" max="100" value="50"><span class="val" id="decoyYVal">50%</span></div></div>
-        <div class="field"><label>Opacity</label><div class="slider-row"><input type="range" id="decoyOpacity" min="0" max="100" value="90"><span class="val" id="decoyOpacityVal">90%</span></div></div>
-        <div class="field"><label>Rotation (°)</label><div class="slider-row"><input type="range" id="decoyRotate" min="-45" max="45" value="0"><span class="val" id="decoyRotateVal">0°</span></div></div>
-      </div>
-
-      <div class="btns">
-        <button class="btn primary" id="overlayRunBtn">🔍 Load target</button>
-        <button class="btn" id="overlayOpenBtn">🚀 Open live PoC</button>
-        <button class="btn" id="overlayDownloadBtn">⬇️ Download PoC</button>
-        <button class="btn ghost" id="overlayCopyBtn">📋 Copy PoC HTML</button>
-        <button class="btn ghost" id="overlayResetBtn">↺ Reset</button>
-      </div>
-      <div class="info-line" id="overlayHint">ℹ️ "Open live PoC" launches the exact attack page in a new tab — try clicking the decoy there to see if it sits over real, clickable target content.</div>
-
-      <div class="frame-shell" id="overlayShell">
-        <span class="frame-label">overlay preview</span>
-        <iframe id="overlayFrame" src="about:blank" title="overlay test frame"></iframe>
-      </div>
-
-      <div class="verdict-row"><span class="verdict idle" id="verdict-overlay">⚪ Not built</span></div>
-      <div class="fixbox" id="fix-overlay"></div>
-
-      <details style="margin-top:14px;">
-        <summary style="cursor:pointer;font-family:var(--mono);font-size:12.5px;color:var(--text-lo);">View generated PoC source</summary>
-        <pre class="code" id="overlayCode" style="margin-top:10px;"></pre>
-      </details>
-    </div>
-
-    <!-- 3. Drag & drop -->
-    <div class="card">
-      <h2>🖱️ Drag-and-Drop Bypass Check <span class="kind-tag manual">manual — real gesture required</span></h2>
-      <div class="why-box">
-        <p><strong>What this checks:</strong> some sites only guard against <em>clicks</em>. An attacker can hide a real control under an invisible layer so that <em>dragging</em> something across it — not clicking — triggers the action underneath.</p>
-        <p><strong>Why it's manual:</strong> browsers deliberately reject scripted/fake drag events as a security measure, so this needs an actual mouse gesture from you. It can't be included in the Smart Scanner.</p>
-      </div>
-      <div class="btns"><button class="btn ghost" id="dragResetBtn">↺ Reset</button></div>
-      <div class="row"><div style="flex:1;min-width:180px;"><span class="draggable" id="dragChip" draggable="true">⠿ Drag me onto the zone below</span></div></div>
-      <div class="drop-zone" id="dropZone">Drop zone — imagine this sits directly over a real target's sensitive button</div>
-      <div class="verdict-row"><span class="verdict idle" id="verdict-drag">⚪ Not tested</span></div>
-      <div class="fixbox" id="fix-drag"></div>
-    </div>
-
-    <!-- 4. postMessage tester -->
-    <div class="card">
-      <h2>📡 postMessage exposure tester <span class="kind-tag">technique demo</span></h2>
-      <p class="desc">Sends a benign probe to the target frame loaded in the Overlay builder above, with a wildcard <code>targetOrigin</code>, and logs anything it posts back.</p>
-      <div class="btns">
-        <button class="btn primary" id="pmSendBtn">📤 Send probe message</button>
-        <button class="btn ghost" id="pmClearBtn">🧹 Clear log</button>
-      </div>
-      <div class="log" id="pmLog"><div class="entry">Log is empty. Load a target in the Overlay builder above first, then send a probe.</div></div>
-      <div class="verdict-row"><span class="verdict idle" id="verdict-postmsg">⚪ Not tested</span></div>
-      <div class="fixbox" id="fix-postmsg"></div>
-    </div>
-
-    <!-- 5. Header inspector -->
-    <div class="card">
-      <h2>📋 Response header inspector <span class="kind-tag verdict">verdict test</span></h2>
-      <p class="desc">Checks for <code>X-Frame-Options</code>, <code>Content-Security-Policy: frame-ancestors</code>, and <code>Permissions-Policy</code>. Tries a direct read first, then automatically relays through a public CORS proxy (if enabled above) — the curl command below is always shown too, for your report or if both automatic paths fail.</p>
-      <div class="btns"><button class="btn primary" id="headerCheckBtn">🔍 Check headers automatically</button></div>
-      <div class="info-line" id="headerInfo">ℹ️ Set a target in the Smart Scanner above, then check headers.</div>
-      <pre class="code" id="headerCurl" style="display:none;"></pre>
-      <div class="field" style="margin-top:12px;">
-        <label>📋 Or paste curl output here for a manual verdict</label>
-        <textarea id="headerPaste" rows="4" placeholder="Paste the terminal output of the curl command here…"></textarea>
-      </div>
-      <div class="btns"><button class="btn" id="headerParseBtn">🔎 Parse pasted output</button></div>
-      <div class="verdict-row"><span class="verdict idle" id="verdict-headers">⚪ Not tested</span></div>
-      <div class="fixbox" id="fix-headers"></div>
-    </div>
-
-    <!-- 6. Timing bypass -->
-    <div class="card">
-      <h2>⏱️ Timing / multi-step bypass test <span class="kind-tag manual">manual — real gesture required</span></h2>
-      <p class="desc">Some confirmation flows only need two clicks in quick succession. This times a real two-click sequence from you so you can note the window a real overlay would need.</p>
-      <div class="btns">
-        <button class="btn primary" id="timingBtn">Click 1 of 2</button>
-        <button class="btn ghost" id="timingResetBtn">↺ Reset</button>
-      </div>
-      <div class="info-line" id="timingInfo">ℹ️ Not started.</div>
-      <div class="verdict-row"><span class="verdict idle" id="verdict-timing">⚪ Not tested</span></div>
-      <div class="fixbox" id="fix-timing"></div>
-    </div>
-
-    <div class="foot"><span>← Back to the <button class="linklike" data-goto="classic">Classic Test</button></span></div>
-
-  </section>
-
-</div>
-
-<!-- ============ Guide drawer ============ -->
-<div class="drawer-overlay" id="drawerOverlay"></div>
-<div class="drawer" id="drawer">
-  <div class="drawer-head"><strong style="font-family:var(--mono);">📖 How to use this tool</strong><button class="close-btn" id="drawerClose">✕</button></div>
-
-  <h3>🔎 Smart Scanner</h3>
-  <p>Set a target once, click "Run Full Scan," and watch the console. It checks headers (direct, then via proxy if enabled), loads the classic and nested frame tests, loads the overlay preview, and sends a postMessage probe — all automatically. If the header check gets a clear answer, the frame tests are marked automatically too; otherwise you'll be asked to confirm visually.</p>
-
-  <h3>🛡️ Classic Test</h3>
-  <p>Loads the target directly in an iframe. Look at the frame, then click "Real content" or "Blank/blocked" — cross-origin restrictions mean the browser can't tell you this programmatically, so your eyes are the verdict when the header check is inconclusive.</p>
-
-  <h3>🪆 Nested-frame bypass</h3>
-  <p>Frames the target three layers deep to check whether a client-side-only frame-busting script can be defeated by adding an extra layer of framing.</p>
-
-  <h3>🎭 Overlay PoC builder</h3>
-  <p>Drag the sliders to position a decoy button over the framed target, then <strong>"Open live PoC"</strong> to launch the exact attack page in a new tab. Click the decoy there — if it sits over real, clickable content, the overlay works. Download or copy the HTML for your report.</p>
-
-  <h3>🖱️ Drag-jacking</h3>
-  <p>Drag the chip onto the drop zone. Demonstrates that drag interactions can bypass click-only defenses. Needs a real mouse gesture — browsers block scripted drag events, so it can't be scanned automatically.</p>
-
-  <h3>📡 postMessage tester</h3>
-  <p>Load a target in the Overlay builder first. Checks whether the page's message handler responds to unsolicited, wildcard-origin messages — worth a closer look if it does.</p>
-
-  <h3>📋 Header inspector</h3>
-  <p>Now checks automatically: direct fetch first, then a chain of public CORS proxies if direct access is blocked. Paste curl output any time for a manual override.</p>
-
-  <h3>⏱️ Timing test</h3>
-  <p>Times a real two-click sequence. Fast completions flag that a confirm-flow could be vulnerable to a repositioned overlay between clicks.</p>
-
-  <h3>📊 Dashboard &amp; reports</h3>
-  <p>Tracks every module's verdict and suggests a fix wherever something's vulnerable or worth reviewing. "Generate report image" makes a shareable PNG; the Markdown buttons make a text report.</p>
 </div>
 
 <script>
 (function () {
   'use strict';
 
-  /* ============================================================
-     Theme toggle
-     ============================================================ */
+  /* Theme toggle */
   (function () {
     const KEY = 'cj-theme';
     const root = document.documentElement;
@@ -485,794 +193,147 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     });
   })();
 
-  /* ============================================================
-     Tab switching
-     ============================================================ */
-  (function () {
-    const tabBtns = document.querySelectorAll('.tab');
-    const panels = { classic: document.getElementById('panel-classic'), advanced: document.getElementById('panel-advanced') };
-    function go(name) {
-      Object.entries(panels).forEach(([key, el]) => el.classList.toggle('active', key === name));
-      tabBtns.forEach(b => b.classList.toggle('active', b.dataset.panel === name));
-      window.scrollTo(0, 0);
-    }
-    tabBtns.forEach(b => b.addEventListener('click', () => go(b.dataset.panel)));
-    document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => go(b.dataset.goto)));
-  })();
-
-  /* ============================================================
-     Guide drawer
-     ============================================================ */
-  (function () {
-    const drawer = document.getElementById('drawer');
-    const overlay = document.getElementById('drawerOverlay');
-    function open() { drawer.classList.add('open'); overlay.classList.add('open'); }
-    function close() { drawer.classList.remove('open'); overlay.classList.remove('open'); }
-    document.getElementById('guideBtn').addEventListener('click', open);
-    document.getElementById('drawerClose').addEventListener('click', close);
-    overlay.addEventListener('click', close);
-  })();
-
-  /* ============================================================
-     Shared helpers & state
-     ============================================================ */
   function normalizeUrl(raw) {
     if (!raw) return '';
     try { return new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`).toString(); }
     catch (e) { return ''; }
   }
   function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-  const VERDICT = {
-    idle:         { icon:'⚪', label:'Not tested' },
-    vulnerable:   { icon:'🔴', label:'Vulnerable' },
-    protected:    { icon:'🟢', label:'Protected' },
-    inconclusive: { icon:'🟡', label:'Inconclusive' },
-    info:         { icon:'🔵', label:'Info' },
-  };
-  const STATE_COLORS = { idle:'#8592A0', vulnerable:'#FF5D5D', protected:'#34D399', inconclusive:'#FFB020', info:'#5EA1FF' };
-  const STATE_LABELS = { idle:'NOT TESTED', vulnerable:'VULNERABLE', protected:'PROTECTED', inconclusive:'INCONCLUSIVE', info:'INFO' };
-
-  function paintVerdict(el, state, customLabel) {
-    if (!el) return;
-    const m = VERDICT[state] || VERDICT.idle;
-    el.className = el.className.replace(/\b(idle|vulnerable|protected|inconclusive|info)\b/g, '').trim() + ' ' + state;
-    el.innerHTML = `${m.icon} ${customLabel || m.label}`;
-  }
-
-  const NOTES = {
-    classic:  { vulnerable:"Add response header X-Frame-Options: DENY or Content-Security-Policy: frame-ancestors 'none' (or a trusted-origin allow-list) to this page." },
-    nested:   { vulnerable:"Same header fix applies — and confirm the protection isn't only a client-side frame-busting script, since those can miss nested frames." },
-    headers:  { vulnerable:"No frame-ancestors / X-Frame-Options header was found. Add Content-Security-Policy: frame-ancestors 'self' (or 'none').",
-                inconclusive:"Automatic checks couldn't reach a verdict. Run the curl command above (or paste its output) to confirm manually." },
-    overlay:  { info:"This is a PoC builder, not a verdict test. Use \"Open live PoC\" to try the constructed attack page yourself." },
-    drag:     { info:"Drag interactions can bypass click-only defenses. Fixing the framing tests above closes this too." },
-    postmsg:  { inconclusive:"The target responded to an unsolicited wildcard-origin probe. Check that its message handler validates event.origin before trusting the payload.",
-                info:"No response captured — nothing to flag here." },
-    timing:   { inconclusive:"This two-click sequence completed quickly — a repositioned overlay between clicks may go unnoticed in a real confirm-flow.",
-                info:"This sequence was slow enough that a repositioned overlay would likely be noticed." },
-  };
-  function noteFor(key, state) { return (NOTES[key] && NOTES[key][state]) || ''; }
-
-  const REPORT = {
-    classic:  { label:'Classic framing test',   state:'idle', detail:'Not run yet.' },
-    nested:   { label:'Nested-frame bypass',     state:'idle', detail:'Not run yet.' },
-    headers:  { label:'Response headers',        state:'idle', detail:'Not run yet.' },
-    overlay:  { label:'Overlay PoC',             state:'idle', detail:'Not built yet.' },
-    drag:     { label:'Drag-jacking',            state:'idle', detail:'Manual — see Advanced tab.' },
-    postmsg:  { label:'postMessage exposure',    state:'idle', detail:'Not run yet.' },
-    timing:   { label:'Timing bypass',           state:'idle', detail:'Manual — see Advanced tab.' },
-  };
-
-  let testsRun = 0;
-  function bumpTests() { testsRun += 1; document.getElementById('gsCount').textContent = String(testsRun); }
-
-  const globalTargetEl = document.getElementById('globalTarget');
-  function currentTarget() {
-    const t = normalizeUrl(globalTargetEl.value.trim());
-    document.getElementById('gsTarget').textContent = t || '— not set —';
-    return t;
-  }
-  globalTargetEl.addEventListener('input', currentTarget);
-
-  function computeOverallState() {
-    const states = ['classic', 'nested', 'headers'].map(k => REPORT[k].state);
-    const ran = states.filter(s => s !== 'idle');
-    if (!ran.length) return 'idle';
-    if (ran.includes('vulnerable')) return 'vulnerable';
-    if (ran.includes('inconclusive')) return 'inconclusive';
-    return 'protected';
-  }
-
-  function setResult(key, state, detail) {
-    REPORT[key].state = state;
-    if (detail) REPORT[key].detail = detail;
-    renderReportUI();
-  }
-
-  function renderReportUI() {
-    Object.entries(REPORT).forEach(([key, r]) => {
-      paintVerdict(document.getElementById('verdict-' + key), r.state);
-      paintVerdict(document.getElementById('dash-verdict-' + key), r.state);
-
-      const dd = document.getElementById('dash-detail-' + key);
-      if (dd) dd.textContent = r.detail;
-
-      const tile = document.getElementById('dash-tile-' + key);
-      if (tile) tile.style.borderLeftColor = STATE_COLORS[r.state];
-
-      const note = noteFor(key, r.state);
-      const localNote = document.getElementById('fix-' + key);
-      if (localNote) {
-        if (note) { localNote.textContent = '💡 ' + note; localNote.className = 'fixbox show sev-' + r.state; }
-        else { localNote.className = 'fixbox'; localNote.textContent = ''; }
-      }
-      const dashFix = document.getElementById('dash-fix-' + key);
-      if (dashFix) {
-        if (note) { dashFix.style.display = 'block'; dashFix.textContent = '💡 ' + note; }
-        else { dashFix.style.display = 'none'; }
-      }
-    });
-
-    const overall = computeOverallState();
-    paintVerdict(document.getElementById('overallVerdict'), overall,
-      overall === 'idle' ? 'Not tested yet' :
-      overall === 'vulnerable' ? 'VULNERABLE' :
-      overall === 'protected' ? 'PROTECTED' : 'INCONCLUSIVE');
-
-    const flagged = Object.entries(REPORT)
-      .map(([key, r]) => ({ text: noteFor(key, r.state), state: r.state }))
-      .filter(n => n.text && (n.state === 'vulnerable' || n.state === 'inconclusive'));
-    const sugEl = document.getElementById('overallSuggestions');
-    if (flagged.length) {
-      sugEl.style.display = 'block';
-      sugEl.innerHTML = '<strong>💡 Recommended next steps</strong><ul>' + flagged.map(n => `<li>${escapeHtml(n.text)}</li>`).join('') + '</ul>';
-    } else {
-      sugEl.style.display = 'none';
-    }
-  }
-
-  function downloadBlob(filename, content, mime) {
-    const blob = new Blob([content], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
-  }
-
-  /* ============================================================
-     Scan console
-     ============================================================ */
-  function logC(msg) {
-    const el = document.getElementById('scanConsole');
-    if (el.querySelector('.entry.muted')) el.innerHTML = '';
-    const div = document.createElement('div');
-    div.className = 'entry';
-    div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-    el.appendChild(div);
-    el.scrollTop = el.scrollHeight;
-  }
-  document.getElementById('scanClearBtn').addEventListener('click', () => {
-    document.getElementById('scanConsole').innerHTML = '<div class="entry muted">Console cleared.</div>';
-    document.getElementById('scanProgressFill').style.width = '0%';
-  });
-  function setScanProgress(step, total) {
-    document.getElementById('scanProgressFill').style.width = Math.round((step / total) * 100) + '%';
-  }
-
-  /* ============================================================
-     Header inspector — direct fetch, then CORS-proxy chain
-     ============================================================ */
   const HEADERS_OF_INTEREST = ['x-frame-options', 'content-security-policy', 'permissions-policy'];
   const PROXIES = [
-    { name: 'corsproxy.io',    build: u => `https://corsproxy.io/?url=${encodeURIComponent(u)}` },
-    { name: 'allorigins.win',  build: u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}` },
-    { name: 'codetabs.com',    build: u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}` },
+    { name: 'corsproxy.io',   build: u => `https://corsproxy.io/?url=${encodeURIComponent(u)}` },
+    { name: 'allorigins.win', build: u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}` },
+    { name: 'codetabs.com',   build: u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}` },
   ];
 
   function buildCurlCmd(target) {
-    return `curl -sI "${target}" | grep -iE "x-frame-options|content-security-policy|permissions-policy"
-
-# What to look for:
-#   X-Frame-Options: DENY | SAMEORIGIN         -> framing blocked / restricted
-#   Content-Security-Policy: frame-ancestors …  -> modern replacement, takes precedence
-#   No output at all                            -> likely vulnerable to framing`;
+    return `curl -sI "${target}" | grep -iE "x-frame-options|content-security-policy|permissions-policy"`;
   }
 
-  async function runHeaderCheck(target, log) {
-    log = log || function () {};
-    log(`Checking headers for ${target}`);
-
+  async function runHeaderCheck(target, setStatus) {
+    setStatus('Checking response headers…');
     try {
       const res = await fetch(target, { method: 'HEAD', mode: 'cors' });
       const found = HEADERS_OF_INTEREST.map(h => [h, res.headers.get(h)]).filter(([, v]) => v);
-      if (found.length) {
-        log(`✓ Direct fetch exposed: ${found.map(([k]) => k).join(', ')}`);
-        return { state: 'protected', detail: found.map(([k, v]) => `${k}: ${v}`).join(' · ') + ' (direct)' };
-      }
-      log('Direct fetch succeeded but exposed no matching headers (inconclusive on its own)');
-    } catch (e) {
-      log('✗ Direct fetch blocked by CORS');
-    }
+      if (found.length) return { state: 'protected', method: 'direct request', found };
+    } catch (e) { /* fall through to proxy */ }
 
-    const useProxy = document.getElementById('useProxyToggle').checked;
-    if (!useProxy) {
-      log('Proxy relay disabled — use the curl command below to verify manually.');
-      return { state: 'inconclusive', detail: 'Could not read headers directly; proxy relay disabled.' };
+    if (!document.getElementById('proxyToggle').checked) {
+      return { state: 'inconclusive', method: 'direct request (blocked by CORS)', found: [] };
     }
 
     for (const p of PROXIES) {
-      log(`→ Trying proxy relay: ${p.name}…`);
+      setStatus(`Checking headers via ${p.name}…`);
       try {
         const res = await fetch(p.build(target), { method: 'GET' });
         const found = HEADERS_OF_INTEREST.map(h => [h, res.headers.get(h)]).filter(([, v]) => v);
-        if (found.length) {
-          log(`✓ ${p.name} exposed: ${found.map(([k]) => k).join(', ')}`);
-          return { state: 'protected', detail: found.map(([k, v]) => `${k}: ${v}`).join(' · ') + ` (via ${p.name})` };
-        }
-        if (res.ok) {
-          log(`${p.name} responded (HTTP ${res.status}) with no matching headers`);
-          return { state: 'vulnerable', detail: `No framing-restriction header found (checked via ${p.name}).` };
-        }
-        log(`${p.name} returned HTTP ${res.status}`);
-      } catch (e) {
-        log(`✗ ${p.name} unreachable or blocked`);
-      }
+        if (found.length) return { state: 'protected', method: p.name, found };
+        if (res.ok) return { state: 'vulnerable', method: p.name, found: [] };
+      } catch (e) { /* try next proxy */ }
     }
-    log('All automatic methods failed — use the curl command below.');
-    return { state: 'inconclusive', detail: 'Automatic header check failed via all methods — verify with curl.' };
+    return { state: 'inconclusive', method: 'all automatic methods failed', found: [] };
   }
 
-  (function headerModule() {
-    const btn = document.getElementById('headerCheckBtn');
-    const info = document.getElementById('headerInfo');
-    const curlBlock = document.getElementById('headerCurl');
-    const pasteEl = document.getElementById('headerPaste');
-    const parseBtn = document.getElementById('headerParseBtn');
+  const VERDICTS = {
+    vulnerable:   { icon: '🔴', title: 'Vulnerable', sub: 'This page can likely be framed by another site.' },
+    protected:    { icon: '🟢', title: 'Protected', sub: 'A framing-restriction header is in place.' },
+    inconclusive: { icon: '🟡', title: "Couldn't determine automatically", sub: 'Check the live preview below, or the technical details.' },
+  };
 
-    btn.addEventListener('click', async () => {
-      const target = currentTarget();
-      if (!target) { info.textContent = '⚠️ Set a target URL first.'; info.className = 'info-line warn'; return; }
-      info.textContent = '⏳ Checking automatically…'; info.className = 'info-line';
-      btn.disabled = true;
+  const FIX_TEXT = "Add the response header <code>Content-Security-Policy: frame-ancestors 'self'</code> (or <code>'none'</code>, or a trusted-origin allow-list) — or the older <code>X-Frame-Options: DENY</code> — to stop this page from being framed.";
 
-      const result = await runHeaderCheck(target, msg => { info.textContent = 'ℹ️ ' + msg; });
-      setResult('headers', result.state, result.detail);
-      bumpTests();
-      btn.disabled = false;
+  function renderResult(target, result) {
+    const v = VERDICTS[result.state];
+    document.getElementById('vbIcon').textContent = v.icon;
+    document.getElementById('vbTitle').textContent = v.title;
+    document.getElementById('vbSub').textContent = v.sub;
+    document.getElementById('verdictBanner').className = 'verdict-banner ' + result.state;
 
-      if (result.state === 'protected') { info.innerHTML = '✅ ' + escapeHtml(result.detail); info.className = 'info-line safe'; }
-      else if (result.state === 'vulnerable') { info.innerHTML = '🔴 ' + escapeHtml(result.detail); info.className = 'info-line warn'; }
-      else { info.innerHTML = '🟡 Automatic check was inconclusive — use the command below, or paste its output.'; info.className = 'info-line warn'; }
+    let explain;
+    if (result.state === 'protected') {
+      explain = `Found: ${result.found.map(([k, val]) => `${k}: ${val}`).join(', ')} (checked via ${result.method}).`;
+    } else if (result.state === 'vulnerable') {
+      explain = `No X-Frame-Options or Content-Security-Policy frame-ancestors header was found (checked via ${result.method}).`;
+    } else {
+      explain = `The browser couldn't read this site's headers directly, and the automatic proxy fallback ${result.method.includes('disabled') || result.method.includes('failed') ? "didn't return a clear answer" : 'also had no luck'}. This is common due to CORS — it doesn't mean the site is vulnerable, just that this couldn't confirm it. Use the curl command in "Technical details" to check yourself, or judge from the live preview below.`;
+    }
+    document.getElementById('explainText').textContent = explain;
 
-      curlBlock.style.display = 'block';
-      curlBlock.textContent = buildCurlCmd(target);
-    });
+    const fixBox = document.getElementById('fixBox');
+    if (result.state === 'vulnerable') {
+      fixBox.innerHTML = '💡 ' + FIX_TEXT;
+      fixBox.className = 'fixbox show';
+    } else if (result.state === 'inconclusive') {
+      fixBox.innerHTML = '💡 If in doubt, adding a CSP <code>frame-ancestors</code> header is a safe default fix regardless — it costs nothing on a site that doesn\'t need to be framed.';
+      fixBox.className = 'fixbox show warn';
+    } else {
+      fixBox.className = 'fixbox';
+      fixBox.textContent = '';
+    }
 
-    parseBtn.addEventListener('click', () => {
-      const text = pasteEl.value.trim();
-      if (!text) { alert('Paste the curl output first.'); return; }
-      const hasXfo = /x-frame-options\s*:/i.test(text);
-      const hasCsp = /content-security-policy\s*:[^\n]*frame-ancestors/i.test(text);
-      if (hasXfo || hasCsp) {
-        setResult('headers', 'protected', 'Confirmed from pasted output: a framing-restriction header is present.');
-        info.innerHTML = '✅ Pasted output shows a framing-restriction header.'; info.className = 'info-line safe';
-      } else {
-        setResult('headers', 'vulnerable', 'Confirmed from pasted output: no framing-restriction header found.');
-        info.innerHTML = '🔴 Pasted output shows no X-Frame-Options or frame-ancestors header.'; info.className = 'info-line warn';
-      }
-      bumpTests();
-    });
-  })();
+    document.getElementById('techMethod').innerHTML = `<b>Method:</b> ${escapeHtml(result.method)}`;
+    document.getElementById('techHeaders').innerHTML = result.found.length
+      ? `<b>Headers found:</b> ${result.found.map(([k, val]) => `${escapeHtml(k)}: ${escapeHtml(val)}`).join(' · ')}`
+      : `<b>Headers found:</b> none`;
+    document.getElementById('techCurl').textContent = buildCurlCmd(target);
 
-  /* ============================================================
-     Classic frame — shared action + button wiring
-     ============================================================ */
-  function loadClassicFrame(target) {
-    const testFrame = document.getElementById('testFrame');
-    document.getElementById('classicConfirmBtns').style.display = 'flex';
-    testFrame.src = 'about:blank';
-    setTimeout(() => { testFrame.src = target; }, 80);
-    setResult('classic', 'idle', 'Loaded — awaiting a visual check.');
-    bumpTests();
+    document.getElementById('resultCard').style.display = 'block';
   }
 
-  (function classicModule() {
-    const displayUrlEl = document.getElementById('displayUrl');
-    const iframeUrlEl  = document.getElementById('iframeUrl');
-    const testBtn      = document.getElementById('testBtn');
-    const resetBtn     = document.getElementById('resetBtn');
-    const overlayBtn   = document.getElementById('overlayBtn');
-    const infoLine     = document.getElementById('infoLine');
-    const frameShell   = document.getElementById('frameShell');
-    const testFrame    = document.getElementById('testFrame');
-    let decoyEl = null;
-
-    function setInfo(html, tone) { infoLine.className = 'info-line' + (tone ? ` ${tone}` : ''); infoLine.innerHTML = html; }
-
-    testBtn.addEventListener('click', () => {
-      const target = normalizeUrl(iframeUrlEl.value.trim());
-      if (!target) { setInfo('⚠️ Enter a valid iframe source URL first.', 'warn'); return; }
-      setInfo('⏳ Loading target inside the frame below…');
-      loadClassicFrame(target);
-      if (!globalTargetEl.value.trim()) { globalTargetEl.value = iframeUrlEl.value.trim(); currentTarget(); }
+  let decoyEl = null;
+  function resetOverlay() {
+    if (decoyEl) { decoyEl.remove(); decoyEl = null; }
+    document.getElementById('overlayBtn').textContent = '🎭 Show overlay attack example';
+  }
+  document.getElementById('overlayBtn').addEventListener('click', () => {
+    if (decoyEl) { resetOverlay(); return; }
+    decoyEl = document.createElement('button');
+    decoyEl.className = 'decoy-btn';
+    decoyEl.textContent = '🎁 CLAIM REWARD';
+    decoyEl.addEventListener('click', e => {
+      e.preventDefault();
+      alert('This decoy sits on top of the framed page.\n\nIn a real attack it would be positioned exactly over a sensitive control (e.g. "Delete account") and made invisible with opacity:0 — the visitor thinks they\'re clicking the decoy, but the click lands on the real page underneath.');
     });
+    document.getElementById('frameShell').appendChild(decoyEl);
+    document.getElementById('overlayBtn').textContent = '🎭 Hide overlay example';
+  });
 
-    document.getElementById('classicMarkVuln').addEventListener('click', () => {
-      setInfo('👁️ Marked vulnerable — the target rendered inside the frame.');
-      setResult('classic', 'vulnerable', 'Content was visible inside the frame.');
-    });
-    document.getElementById('classicMarkProtected').addEventListener('click', () => {
-      setInfo('🚫 Marked protected — the frame stayed blank or blocked.', 'safe');
-      setResult('classic', 'protected', 'Frame was blank or showed a block page.');
-    });
-
-    resetBtn.addEventListener('click', () => {
-      displayUrlEl.value = ''; iframeUrlEl.value = ''; testFrame.src = 'about:blank';
-      setInfo('ℹ️ Enter URLs and click <strong>Test framing</strong>, then look at the frame below.');
-      document.getElementById('classicConfirmBtns').style.display = 'none';
-      setResult('classic', 'idle', 'Not run yet.');
-      if (decoyEl) { decoyEl.remove(); decoyEl = null; overlayBtn.textContent = '🎭 Overlay attack'; }
-    });
-
-    overlayBtn.addEventListener('click', () => {
-      if (decoyEl) { decoyEl.remove(); decoyEl = null; overlayBtn.textContent = '🎭 Overlay attack'; return; }
-      decoyEl = document.createElement('button');
-      decoyEl.className = 'decoy-btn';
-      decoyEl.textContent = '🎁 CLAIM FREE REWARD';
-      decoyEl.style.left = '50%'; decoyEl.style.top = '50%';
-      decoyEl.style.transform = 'translate(-50%,-50%)'; decoyEl.style.opacity = '0.92';
-      decoyEl.addEventListener('click', e => {
-        e.preventDefault();
-        alert('This decoy sits on top of the framed page.\n\nIn a real attack it would be positioned exactly over a sensitive control (e.g. "Delete account") and made invisible with opacity:0.');
-      });
-      frameShell.appendChild(decoyEl);
-      overlayBtn.textContent = '🎭 Remove overlay';
-    });
-  })();
-
-  /* ============================================================
-     Nested frame — shared action + button wiring
-     ============================================================ */
-  function buildNestedFrame(target) {
-    const frame1 = document.getElementById('nestedFrame1');
-    const info = document.getElementById('nestedInfo');
-    const FILL = 'width:100%;height:100%;border:0;';
-
-    info.textContent = '⏳ Building 3-level nested frame…'; info.className = 'info-line';
-
-    const level3 = `<iframe src="${target}" style="${FILL}"></iframe>`;
-    const level2Doc = `<!DOCTYPE html><html style="height:100%;"><body style="margin:0;height:100%;">${level3}</body></html>`;
-    const level2 = `<iframe style="${FILL}" srcdoc="${level2Doc.replace(/"/g, '&quot;')}"></iframe>`;
-    const level1Doc = `<!DOCTYPE html><html style="height:100%;"><body style="margin:0;height:100%;">${level2}</body></html>`;
-
-    frame1.removeAttribute('srcdoc');
-    frame1.src = 'about:blank';
-    return new Promise(resolve => {
-      setTimeout(() => {
-        frame1.srcdoc = level1Doc;
-        setTimeout(() => {
-          info.textContent = 'ℹ️ Nested frame built. Look at the innermost frame above, then confirm below.';
-          info.className = 'info-line';
-          document.getElementById('nestedConfirmBtns').style.display = 'flex';
-          setResult('nested', 'idle', 'Built — awaiting a visual check.');
-          bumpTests();
-          resolve();
-        }, 400);
-      }, 80);
-    });
+  const statusLine = document.getElementById('statusLine');
+  const statusText = document.getElementById('statusText');
+  function setStatus(msg) {
+    if (!msg) { statusLine.classList.add('hidden'); return; }
+    statusLine.classList.remove('hidden');
+    statusText.textContent = msg;
   }
 
-  (function nestedModule() {
-    document.getElementById('nestedRunBtn').addEventListener('click', () => {
-      const target = currentTarget();
-      const info = document.getElementById('nestedInfo');
-      if (!target) { info.textContent = '⚠️ Set a target URL first.'; info.className = 'info-line warn'; return; }
-      buildNestedFrame(target);
-    });
-    document.getElementById('nestedMarkVuln').addEventListener('click', () => setResult('nested', 'vulnerable', 'Real content visible through nested frames.'));
-    document.getElementById('nestedMarkProtected').addEventListener('click', () => setResult('nested', 'protected', 'Innermost frame was blank or blocked.'));
-    document.getElementById('nestedResetBtn').addEventListener('click', () => {
-      const frame1 = document.getElementById('nestedFrame1');
-      frame1.removeAttribute('srcdoc'); frame1.src = 'about:blank';
-      document.getElementById('nestedInfo').textContent = 'ℹ️ Set a target in the Smart Scanner above, then run the test.';
-      document.getElementById('nestedInfo').className = 'info-line';
-      document.getElementById('nestedConfirmBtns').style.display = 'none';
-      setResult('nested', 'idle', 'Not run yet.');
-    });
-  })();
+  document.getElementById('checkBtn').addEventListener('click', async () => {
+    const raw = document.getElementById('urlInput').value.trim();
+    const target = normalizeUrl(raw);
+    if (!target) { alert('Enter a valid URL, e.g. https://example.com'); return; }
 
-  /* ============================================================
-     Overlay PoC builder — shared action + button wiring
-     ============================================================ */
-  let overlayDecoyEl = null;
-  let overlayLoadedTarget = '';
+    const btn = document.getElementById('checkBtn');
+    btn.disabled = true;
+    document.getElementById('resultCard').style.display = 'none';
+    resetOverlay();
+    setStatus('Checking response headers…');
 
-  function overlayEnsureDecoy() {
-    const shell = document.getElementById('overlayShell');
-    if (overlayDecoyEl) return overlayDecoyEl;
-    overlayDecoyEl = document.createElement('button');
-    overlayDecoyEl.className = 'decoy-btn';
-    shell.appendChild(overlayDecoyEl);
-    return overlayDecoyEl;
-  }
-  function overlayRenderDecoy() {
-    const decoyText = document.getElementById('decoyText');
-    const xSlider = document.getElementById('decoyX'), ySlider = document.getElementById('decoyY');
-    const opSlider = document.getElementById('decoyOpacity'), rotSlider = document.getElementById('decoyRotate');
-    const el = overlayEnsureDecoy();
-    el.textContent = decoyText.value || 'Decoy';
-    el.style.left = `${xSlider.value}%`; el.style.top = `${ySlider.value}%`;
-    el.style.transform = `translate(-50%,-50%) rotate(${rotSlider.value}deg)`;
-    el.style.opacity = String(Number(opSlider.value) / 100);
-    document.getElementById('decoyXVal').textContent = `${xSlider.value}%`;
-    document.getElementById('decoyYVal').textContent = `${ySlider.value}%`;
-    document.getElementById('decoyOpacityVal').textContent = `${opSlider.value}%`;
-    document.getElementById('decoyRotateVal').textContent = `${rotSlider.value}°`;
-    overlayRenderCode();
-  }
-  function overlayRenderCode() {
-    const decoyText = document.getElementById('decoyText');
-    const xSlider = document.getElementById('decoyX'), ySlider = document.getElementById('decoyY');
-    const opSlider = document.getElementById('decoyOpacity'), rotSlider = document.getElementById('decoyRotate');
-    const target = overlayLoadedTarget || 'https://TARGET-URL-HERE';
-    const text = escapeHtml(decoyText.value || 'Decoy');
-    const html = `<!-- Clickjacking PoC — authorized testing only -->
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Clickjacking PoC</title></head>
-<body style="margin:0;">
-  <div style="position:relative;width:100%;height:100vh;overflow:hidden;">
-    <iframe src="${target}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"></iframe>
-    <button style="position:absolute;left:${xSlider.value}%;top:${ySlider.value}%;
-                    transform:translate(-50%,-50%) rotate(${rotSlider.value}deg);
-                    opacity:${Number(opSlider.value) / 100};z-index:2;padding:14px 24px;
-                    border:none;border-radius:8px;font-weight:700;cursor:pointer;">
-      ${text}
-    </button>
-  </div>
-</body>
-</html>`;
-    document.getElementById('overlayCode').textContent = html;
-    return html;
-  }
-  function loadOverlayFrame(target) {
-    const frame = document.getElementById('overlayFrame');
-    overlayLoadedTarget = target;
+    const result = await runHeaderCheck(target, setStatus);
+
+    setStatus('Loading live preview…');
+    const frame = document.getElementById('previewFrame');
     frame.src = 'about:blank';
     setTimeout(() => { frame.src = target; }, 80);
-    overlayRenderDecoy();
-    bumpTests();
-    setResult('overlay', 'info', `Preview loaded for ${target}`);
-  }
 
-  (function overlayModule() {
-    ['decoyText', 'decoyX', 'decoyY', 'decoyOpacity', 'decoyRotate'].forEach(id =>
-      document.getElementById(id).addEventListener('input', overlayRenderDecoy)
-    );
-    document.getElementById('overlayRunBtn').addEventListener('click', () => {
-      const target = currentTarget();
-      if (!target) { alert('Set a target URL first.'); return; }
-      loadOverlayFrame(target);
-    });
-    document.getElementById('overlayOpenBtn').addEventListener('click', () => {
-      const html = overlayRenderCode();
-      if (!overlayLoadedTarget) { alert('Click "Load target" first so the PoC has a real target URL.'); return; }
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    });
-    document.getElementById('overlayDownloadBtn').addEventListener('click', () => downloadBlob('clickjacking-poc.html', overlayRenderCode(), 'text/html'));
-    document.getElementById('overlayCopyBtn').addEventListener('click', async () => {
-      const html = overlayRenderCode();
-      const btn = document.getElementById('overlayCopyBtn');
-      try { await navigator.clipboard.writeText(html); btn.textContent = '✅ Copied'; setTimeout(() => { btn.textContent = '📋 Copy PoC HTML'; }, 1600); }
-      catch (e) { alert('Copy failed — use "Download PoC" instead.'); }
-    });
-    document.getElementById('overlayResetBtn').addEventListener('click', () => {
-      document.getElementById('overlayFrame').src = 'about:blank';
-      if (overlayDecoyEl) { overlayDecoyEl.remove(); overlayDecoyEl = null; }
-      overlayLoadedTarget = ''; document.getElementById('overlayCode').textContent = '';
-      setResult('overlay', 'idle', 'Not built yet.');
-    });
-    overlayRenderDecoy();
-  })();
-
-  /* ============================================================
-     Drag-jacking simulator
-     ============================================================ */
-  (function dragModule() {
-    const chip = document.getElementById('dragChip');
-    const zone = document.getElementById('dropZone');
-    chip.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', 'cj-chip'); e.dataTransfer.effectAllowed = 'move'; });
-    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('over'));
-    zone.addEventListener('drop', e => {
-      e.preventDefault(); zone.classList.remove('over');
-      zone.textContent = '✅ Drop registered — a drag-based interaction reached this zone.';
-      bumpTests();
-      setResult('drag', 'info', 'Drag interaction reached the drop zone.');
-    });
-    document.getElementById('dragResetBtn').addEventListener('click', () => {
-      zone.textContent = "Drop zone — imagine this sits directly over a real target's sensitive button";
-      setResult('drag', 'idle', 'Manual — see Advanced tab.');
-    });
-  })();
-
-  /* ============================================================
-     postMessage exposure tester — shared action + button wiring
-     ============================================================ */
-  let pmResponseCount = 0;
-  function pmLogEntry(text) {
-    const log = document.getElementById('pmLog');
-    if (log.textContent.includes('Log is empty') || log.textContent.includes('Log cleared')) log.innerHTML = '';
-    const div = document.createElement('div');
-    div.className = 'entry';
-    div.innerHTML = `<span class="t">[${new Date().toLocaleTimeString()}]</span> ${text}`;
-    log.appendChild(div);
-    while (log.children.length > 15) log.removeChild(log.firstChild);
-    log.scrollTop = log.scrollHeight;
-  }
-  function sendProbe() {
-    const overlayFrame = document.getElementById('overlayFrame');
-    if (!overlayFrame.contentWindow || overlayFrame.src === 'about:blank') {
-      pmLogEntry('⚠️ No target loaded — load one via "Load target" in the Overlay builder above first.');
-      return;
-    }
-    const probe = { type: 'cj-probe', from: 'clickjacking-validator', ts: Date.now() };
-    try {
-      overlayFrame.contentWindow.postMessage(probe, '*');
-      pmLogEntry(`Sent probe → ${escapeHtml(JSON.stringify(probe))} (targetOrigin: *)`);
-      bumpTests();
-      if (REPORT.postmsg.state === 'idle') setResult('postmsg', 'info', 'Probe sent — no response yet.');
-    } catch (e) { pmLogEntry(`⚠️ postMessage failed: ${escapeHtml(e.message)}`); }
-  }
-
-  (function postMessageModule() {
-    const overlayFrame = document.getElementById('overlayFrame');
-    window.addEventListener('message', event => {
-      if (!overlayFrame.contentWindow || event.source !== overlayFrame.contentWindow) return;
-      pmResponseCount += 1;
-      const preview = JSON.stringify(event.data).slice(0, 120);
-      pmLogEntry(`Received from <strong>${escapeHtml(event.origin)}</strong>: ${escapeHtml(preview)}`);
-      setResult('postmsg', 'inconclusive', `${pmResponseCount} response(s) received from the target frame.`);
-    });
-    document.getElementById('pmSendBtn').addEventListener('click', sendProbe);
-    document.getElementById('pmClearBtn').addEventListener('click', () => {
-      document.getElementById('pmLog').innerHTML = '<div class="entry">Log cleared.</div>';
-      pmResponseCount = 0;
-    });
-  })();
-
-  /* ============================================================
-     Timing / multi-step bypass test
-     ============================================================ */
-  (function timingModule() {
-    const btn = document.getElementById('timingBtn');
-    const info = document.getElementById('timingInfo');
-    let firstClickAt = null;
-    btn.addEventListener('click', () => {
-      if (firstClickAt === null) {
-        firstClickAt = performance.now();
-        btn.textContent = 'Click 2 of 2';
-        info.textContent = 'ℹ️ First click registered. Click again to complete the sequence.';
-        info.className = 'info-line';
-        return;
-      }
-      const elapsed = Math.round(performance.now() - firstClickAt);
-      firstClickAt = null;
-      btn.textContent = 'Click 1 of 2';
-      const fast = elapsed < 600;
-      info.textContent = `⏱️ Completed in ${elapsed}ms.`;
-      info.className = fast ? 'info-line warn' : 'info-line safe';
-      bumpTests();
-      setResult('timing', fast ? 'inconclusive' : 'info', `${elapsed}ms between clicks.`);
-    });
-    document.getElementById('timingResetBtn').addEventListener('click', () => {
-      firstClickAt = null; btn.textContent = 'Click 1 of 2';
-      info.textContent = 'ℹ️ Not started.'; info.className = 'info-line';
-      setResult('timing', 'idle', 'Manual — see Advanced tab.');
-    });
-  })();
-
-  /* ============================================================
-     Smart Scanner orchestrator
-     ============================================================ */
-  document.getElementById('scanBtn').addEventListener('click', async () => {
-    const target = currentTarget();
-    const btn = document.getElementById('scanBtn');
-    if (!target) { alert('Set a target URL first.'); return; }
-
-    btn.disabled = true; btn.textContent = '⏳ Scanning…';
-    document.getElementById('scanConsole').innerHTML = '';
-    setScanProgress(0, 6);
-    logC(`▶ Starting scan for ${target}`);
-
-    logC('→ Checking response headers…');
-    const headerResult = await runHeaderCheck(target, logC);
-    setResult('headers', headerResult.state, headerResult.detail);
-    logC(headerResult.state === 'protected' ? '🟢 Framing-restriction header found'
-       : headerResult.state === 'vulnerable' ? '🔴 No framing-restriction header found'
-       : '🟡 Could not determine automatically');
-    setScanProgress(1, 6);
-
-    logC('→ Loading classic frame test…');
-    loadClassicFrame(target);
-    logC('→ Loading nested-frame test…');
-    await buildNestedFrame(target);
-
-    if (headerResult.state === 'protected') {
-      setResult('classic', 'protected', 'Inferred from response headers.');
-      setResult('nested', 'protected', 'Header-level protection blocks framing at any depth.');
-      logC('🟢 Classic & nested tests inferred: PROTECTED');
-    } else if (headerResult.state === 'vulnerable') {
-      setResult('classic', 'vulnerable', 'Inferred from response headers — no restriction found.');
-      setResult('nested', 'vulnerable', 'Inferred from response headers.');
-      logC('🔴 Classic & nested tests inferred: VULNERABLE (visually confirm below if you want to double-check)');
-    } else {
-      logC('🟡 Please confirm the classic & nested results visually in their cards below');
-    }
-    setScanProgress(3, 6);
-
-    logC('→ Loading overlay PoC preview…');
-    loadOverlayFrame(target);
-    setScanProgress(4, 6);
-
-    await sleep(900);
-    logC('→ Sending postMessage probe…');
-    sendProbe();
-    setScanProgress(5, 6);
-
-    logC('⚠ Drag-jacking & timing tests need a real mouse gesture — see the Advanced tab');
-    setScanProgress(6, 6);
-    logC(`✔ Scan complete — overall verdict: ${STATE_LABELS[computeOverallState()]}`);
-
-    btn.disabled = false; btn.textContent = '🔎 Run Full Scan';
+    await new Promise(r => setTimeout(r, 250));
+    setStatus('');
+    renderResult(target, result);
+    btn.disabled = false;
   });
 
-  /* ============================================================
-     Report image (canvas) + Markdown export
-     ============================================================ */
-  function wrapTextLines(ctx, text, maxWidth) {
-    const words = text.split(' ');
-    let lines = [], current = '';
-    words.forEach(w => {
-      const test = current ? current + ' ' + w : w;
-      if (ctx.measureText(test).width > maxWidth && current) { lines.push(current); current = w; }
-      else current = test;
-    });
-    if (current) lines.push(current);
-    return lines;
-  }
-  function roundRectPath(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-  }
-  function drawPill(ctx, x, y, text, color, minWidth) {
-    ctx.font = '700 11px "IBM Plex Mono", monospace';
-    const textW = ctx.measureText(text).width;
-    const w = Math.max(minWidth || 0, textW + 24), h = 22;
-    roundRectPath(ctx, x, y, w, h, 11);
-    ctx.fillStyle = color; ctx.globalAlpha = 0.16; ctx.fill(); ctx.globalAlpha = 1;
-    ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.stroke();
-    ctx.fillStyle = color; ctx.textBaseline = 'middle';
-    ctx.fillText(text, x + (w - textW) / 2, y + h / 2 + 1);
-    ctx.textBaseline = 'alphabetic';
-    return w;
-  }
-  function buildReportImage() {
-    const width = 860, padding = 32;
-    const measure = document.createElement('canvas').getContext('2d');
-    const rows = Object.entries(REPORT).map(([key, r]) => {
-      const note = noteFor(key, r.state);
-      measure.font = '11px "IBM Plex Mono", monospace';
-      const noteLines = note ? wrapTextLines(measure, note, width - padding * 2 - 20) : [];
-      const detailLines = r.detail ? wrapTextLines(measure, r.detail, width - padding * 2 - 160) : [];
-      const h = 34 + detailLines.length * 15 + (noteLines.length ? noteLines.length * 15 + 10 : 0) + 18;
-      return { key, r, noteLines, detailLines, h };
-    });
-    const headerH = 130, footerH = 50;
-    const height = headerH + rows.reduce((a, b) => a + b.h, 0) + footerH;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = width; canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#0A0E13'; ctx.fillRect(0, 0, width, height);
-
-    ctx.fillStyle = '#E9EFF5';
-    ctx.font = '700 22px Inter, sans-serif';
-    ctx.fillText('🛡️ Clickjacking Assessment Report', padding, 42);
-    ctx.font = '12px "IBM Plex Mono", monospace';
-    ctx.fillStyle = '#8592A0';
-    ctx.fillText('Target: ' + (currentTarget() || 'not set'), padding, 66);
-    ctx.fillText('Generated: ' + new Date().toLocaleString(), padding, 84);
-
-    const overall = computeOverallState();
-    drawPill(ctx, padding, 96, STATE_LABELS[overall], STATE_COLORS[overall], 150);
-
-    ctx.strokeStyle = '#232C38';
-    ctx.beginPath(); ctx.moveTo(padding, headerH - 6); ctx.lineTo(width - padding, headerH - 6); ctx.stroke();
-
-    let cy = headerH;
-    rows.forEach(({ r, noteLines, detailLines, h }) => {
-      ctx.fillStyle = STATE_COLORS[r.state];
-      ctx.fillRect(padding, cy + 6, 4, h - 20);
-      ctx.fillStyle = '#E9EFF5';
-      ctx.font = '600 14px Inter, sans-serif';
-      ctx.fillText(r.label, padding + 16, cy + 20);
-      drawPill(ctx, width - padding - 140, cy + 6, STATE_LABELS[r.state], STATE_COLORS[r.state], 140);
-
-      let ny = cy + 20;
-      ctx.font = '11px "IBM Plex Mono", monospace';
-      ctx.fillStyle = '#8592A0';
-      detailLines.forEach(line => { ny += 16; ctx.fillText(line, padding + 16, ny); });
-      if (noteLines.length) {
-        ny += 6;
-        ctx.font = '11px "IBM Plex Mono", monospace';
-        ctx.fillStyle = STATE_COLORS[r.state];
-        noteLines.forEach((line, i) => { ny += 15; ctx.fillText((i === 0 ? '💡 ' : '   ') + line, padding + 16, ny); });
-      }
-      cy += h;
-    });
-
-    ctx.font = '11px "IBM Plex Mono", monospace';
-    ctx.fillStyle = '#5B6672';
-    ctx.fillText('Generated by Clickjacking Validator — for authorized security testing only.', padding, height - 18);
-    return canvas;
-  }
-  function buildMarkdownReport() {
-    const target = currentTarget() || '(not set)';
-    const lines = Object.entries(REPORT).map(([key, r]) => {
-      const note = noteFor(key, r.state);
-      return `- **${r.label}** — ${STATE_LABELS[r.state]}${r.detail ? ' — ' + r.detail : ''}${note ? '\n  - 💡 ' + note : ''}`;
-    });
-    return `# Clickjacking Assessment Report
-
-**Target:** ${target}
-**Generated:** ${new Date().toLocaleString()}
-**Overall verdict:** ${STATE_LABELS[computeOverallState()]}
-
-## Test results
-
-${lines.join('\n')}
-
-_Generated by Clickjacking Validator — for authorized security testing only._`;
-  }
-
-  document.getElementById('genImageBtn').addEventListener('click', () => {
-    const dataUrl = buildReportImage().toDataURL('image/png');
-    document.getElementById('reportImgPreview').src = dataUrl;
-    document.getElementById('reportImgWrap').style.display = 'block';
-    document.getElementById('downloadImgBtn').dataset.href = dataUrl;
+  document.getElementById('urlInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('checkBtn').click();
   });
-  document.getElementById('downloadImgBtn').addEventListener('click', () => {
-    let href = document.getElementById('downloadImgBtn').dataset.href;
-    if (!href) {
-      href = buildReportImage().toDataURL('image/png');
-      document.getElementById('reportImgPreview').src = href;
-      document.getElementById('reportImgWrap').style.display = 'block';
-    }
-    const a = document.createElement('a'); a.href = href; a.download = 'clickjacking-report.png';
-    document.body.appendChild(a); a.click(); a.remove();
-  });
-  document.getElementById('copySummaryBtn').addEventListener('click', async () => {
-    const md = buildMarkdownReport();
-    const btn = document.getElementById('copySummaryBtn');
-    try { await navigator.clipboard.writeText(md); btn.textContent = '✅ Copied'; setTimeout(() => { btn.textContent = '📋 Copy Markdown'; }, 1600); }
-    catch (e) { alert(md); }
-  });
-  document.getElementById('downloadMdBtn').addEventListener('click', () => downloadBlob('clickjacking-report.md', buildMarkdownReport(), 'text/markdown'));
-
-  currentTarget();
-  renderReportUI();
 })();
 </script>
 </body>
