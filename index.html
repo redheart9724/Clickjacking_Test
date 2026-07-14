@@ -37,11 +37,7 @@ code{font-family:var(--mono);background:var(--panel-2);padding:1px 5px;border-ra
 .wrap{max-width:960px;margin:0 auto;padding:0 24px 80px;}
 
 /* ---------- Top bar ---------- */
-.tabbar{
-  position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:14px 24px;
-  background:color-mix(in srgb, var(--ink) 88%, transparent);backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--line);
-}
+.tabbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:14px 24px;background:color-mix(in srgb, var(--ink) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
 .brand{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:600;letter-spacing:.02em;font-size:15px;white-space:nowrap;}
 .brand .glyph{font-size:18px;}
 .tabs{display:flex;gap:4px;margin-left:auto;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;}
@@ -66,24 +62,23 @@ code{font-family:var(--mono);background:var(--panel-2);padding:1px 5px;border-ra
 
 /* ---------- Cards ---------- */
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin:18px 0;box-shadow:var(--shadow);}
-.card h2{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px;}
-.card .desc{color:var(--text-lo);font-size:13.5px;margin:0 0 16px;}
+.card h2{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.card .desc{color:var(--text-lo);font-size:13.5px;margin:0 0 14px;}
 .kind-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-lo);border:1px solid var(--line);border-radius:999px;padding:2px 9px;margin-left:auto;white-space:nowrap;}
 .kind-tag.verdict{color:var(--accent);border-color:var(--accent);}
+.kind-tag.manual{color:var(--warn);border-color:var(--warn);}
 
 .field{margin-bottom:14px;}
 .field label{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--text-lo);margin-bottom:6px;letter-spacing:.02em;}
-.field input[type="text"],.field textarea{
-  width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text-hi);
-  border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:13.5px;outline:none;
-  transition:border-color .15s ease;
-}
+.field input[type="text"],.field textarea{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text-hi);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:13.5px;outline:none;transition:border-color .15s ease;}
 .field textarea{resize:vertical;}
 .field input:focus-visible,.field textarea:focus-visible{border-color:var(--accent);}
+.check-row{display:flex;align-items:flex-start;gap:8px;font-family:var(--mono);font-size:12px;color:var(--text-lo);margin:4px 0 14px;line-height:1.5;}
+.check-row input{accent-color:var(--accent);margin-top:2px;}
 
 .row{display:flex;gap:12px;flex-wrap:wrap;}
 .row .field{flex:1;min-width:220px;}
-.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;align-items:center;}
 
 button.btn{font-family:var(--mono);font-size:13px;font-weight:600;border-radius:8px;padding:10px 16px;border:1px solid var(--line);background:var(--panel-2);color:var(--text-hi);cursor:pointer;transition:transform .1s ease, border-color .15s ease, background .15s ease;display:inline-flex;align-items:center;gap:8px;}
 button.btn:hover{border-color:var(--accent);}
@@ -93,7 +88,7 @@ button.btn.primary{background:var(--accent);border-color:var(--accent);color:#06
 button.btn.danger{border-color:var(--danger);color:var(--danger);}
 button.btn.danger:hover{background:var(--danger-dim);}
 button.btn.ghost{background:transparent;}
-button.btn:disabled{opacity:.45;cursor:not-allowed;}
+button.btn:disabled{opacity:.5;cursor:not-allowed;}
 
 /* ---------- Frame area ---------- */
 .frame-shell{position:relative;margin-top:14px;border:1px dashed var(--line);border-radius:10px;overflow:hidden;background:repeating-linear-gradient(45deg, var(--panel-2) 0 10px, var(--panel) 10px 20px);height:340px;}
@@ -112,7 +107,6 @@ button.btn:disabled{opacity:.45;cursor:not-allowed;}
 .verdict.inconclusive{color:var(--warn);border-color:var(--warn);background:var(--warn-dim);}
 .verdict.info{color:var(--accent);border-color:var(--accent);background:var(--accent-dim);}
 .verdict.big{font-size:14px;padding:9px 16px;}
-
 .verdict-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;}
 
 /* ---------- Fix / note boxes ---------- */
@@ -129,12 +123,19 @@ button.btn:disabled{opacity:.45;cursor:not-allowed;}
 .foot{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);color:var(--text-lo);font-size:12.5px;display:flex;gap:8px;}
 .foot button.linklike{background:none;border:none;padding:0;color:var(--accent);cursor:pointer;font-size:12.5px;text-decoration:underline;font-family:inherit;}
 
+/* ---------- Scanner ---------- */
+.scan-progress{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:14px;}
+.scan-progress-fill{height:100%;width:0%;background:var(--accent);transition:width .3s ease;}
+.scan-console{margin-top:12px;background:#04070a;border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:12px;max-height:230px;overflow-y:auto;color:#9FE7B8;}
+.scan-console .entry{padding:2px 0;white-space:pre-wrap;word-break:break-word;}
+.scan-console .entry.muted{color:#5B6672;}
+
 /* ---------- Dashboard ---------- */
 .dash-summary{display:flex;gap:26px;flex-wrap:wrap;margin:4px 0 16px;padding:14px 16px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;}
 .dash-summary-item .k{display:block;font-family:var(--mono);font-size:10px;color:var(--text-lo);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}
 .dash-summary-item .v{font-family:var(--mono);font-size:13px;color:var(--text-hi);}
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:12px;}
-.dash-tile{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--panel-2);}
+.dash-tile{border:1px solid var(--line);border-left:3px solid var(--line);border-radius:10px;padding:14px;background:var(--panel-2);transition:border-color .2s ease;}
 .dash-tile .dt-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
 .dash-tile .dt-name{font-family:var(--mono);font-size:12px;color:var(--text-hi);font-weight:600;}
 .dash-tile .dt-detail{font-size:11.5px;color:var(--text-lo);min-height:14px;}
@@ -161,6 +162,10 @@ button.btn:disabled{opacity:.45;cursor:not-allowed;}
 .log .entry .t{color:var(--accent);}
 pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:14px;font-family:var(--mono);font-size:12px;overflow-x:auto;color:var(--text-hi);white-space:pre-wrap;word-break:break-word;}
 .warn-banner{display:flex;gap:10px;align-items:flex-start;background:var(--warn-dim);border:1px solid color-mix(in srgb, var(--warn) 50%, var(--line));color:var(--warn);border-radius:10px;padding:12px 14px;font-size:13px;margin:20px 0;}
+.why-box{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--text-lo);margin-bottom:14px;}
+.why-box strong{color:var(--text-hi);}
+.why-box p{margin:0 0 6px;}
+.why-box p:last-child{margin-bottom:0;}
 
 /* ---------- Guide drawer ---------- */
 .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:90;}
@@ -189,10 +194,28 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
 
 <div class="wrap">
 
-  <!-- ============ Persistent Dashboard (visible on both tabs) ============ -->
+  <!-- ============ Smart Scanner (persistent) ============ -->
+  <div class="card" id="scannerCard">
+    <h2>🔎 Smart Scanner <span class="kind-tag verdict">automated</span></h2>
+    <p class="desc">One click runs the header, classic-frame, nested-frame, overlay-preview and postMessage checks automatically. Drag-jacking and the timing test need a real mouse gesture, so they're flagged for manual follow-up in the Advanced tab.</p>
+
+    <div class="field"><label>🔗 Target URL</label><input type="text" id="globalTarget" placeholder="https://example.com"></div>
+
+    <label class="check-row"><input type="checkbox" id="useProxyToggle" checked> Auto-check headers via public CORS-proxy relay when direct access is blocked (routes the target URL through a third-party service — turn off for confidential engagements and use the manual curl option in the Header Inspector instead)</label>
+
+    <div class="btns">
+      <button class="btn primary" id="scanBtn">🔎 Run Full Scan</button>
+      <button class="btn ghost" id="scanClearBtn">🧹 Clear console</button>
+    </div>
+
+    <div class="scan-progress"><div class="scan-progress-fill" id="scanProgressFill"></div></div>
+    <div class="scan-console" id="scanConsole"><div class="entry muted">Console output will appear here once you run a scan.</div></div>
+  </div>
+
+  <!-- ============ Dashboard (persistent) ============ -->
   <div class="card" id="dashboardCard">
     <h2>📊 Vulnerability Dashboard</h2>
-    <p class="desc">Updates automatically as you run tests in either tab. 🔴 vulnerable · 🟢 protected · 🟡 needs a manual check · 🔵 informational.</p>
+    <p class="desc">Updates automatically as the scan runs (or as you use the Advanced tab manually). 🔴 vulnerable · 🟢 protected · 🟡 needs a manual check · 🔵 informational.</p>
 
     <div class="dash-summary">
       <div class="dash-summary-item"><span class="k">Overall verdict</span><span class="verdict idle big" id="overallVerdict">⚪ Not tested yet</span></div>
@@ -201,13 +224,13 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     </div>
 
     <div class="dash-grid" id="dashGrid">
-      <div class="dash-tile"><div class="dt-head"><span class="dt-name">🛡️ Classic framing</span><span class="verdict idle" id="dash-verdict-classic">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-classic">Not run yet.</div><div class="dt-fix" id="dash-fix-classic"></div></div>
-      <div class="dash-tile"><div class="dt-head"><span class="dt-name">🪆 Nested-frame</span><span class="verdict idle" id="dash-verdict-nested">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-nested">Not run yet.</div><div class="dt-fix" id="dash-fix-nested"></div></div>
-      <div class="dash-tile"><div class="dt-head"><span class="dt-name">📋 Response headers</span><span class="verdict idle" id="dash-verdict-headers">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-headers">Not run yet.</div><div class="dt-fix" id="dash-fix-headers"></div></div>
-      <div class="dash-tile"><div class="dt-head"><span class="dt-name">🎭 Overlay PoC</span><span class="verdict idle" id="dash-verdict-overlay">⚪ Not built</span></div><div class="dt-detail" id="dash-detail-overlay">Not built yet.</div><div class="dt-fix" id="dash-fix-overlay"></div></div>
-      <div class="dash-tile"><div class="dt-head"><span class="dt-name">🖱️ Drag-jacking</span><span class="verdict idle" id="dash-verdict-drag">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-drag">Not run yet.</div><div class="dt-fix" id="dash-fix-drag"></div></div>
-      <div class="dash-tile"><div class="dt-head"><span class="dt-name">📡 postMessage</span><span class="verdict idle" id="dash-verdict-postmsg">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-postmsg">Not run yet.</div><div class="dt-fix" id="dash-fix-postmsg"></div></div>
-      <div class="dash-tile"><div class="dt-head"><span class="dt-name">⏱️ Timing bypass</span><span class="verdict idle" id="dash-verdict-timing">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-timing">Not run yet.</div><div class="dt-fix" id="dash-fix-timing"></div></div>
+      <div class="dash-tile" id="dash-tile-classic"><div class="dt-head"><span class="dt-name">🛡️ Classic framing</span><span class="verdict idle" id="dash-verdict-classic">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-classic">Not run yet.</div><div class="dt-fix" id="dash-fix-classic"></div></div>
+      <div class="dash-tile" id="dash-tile-nested"><div class="dt-head"><span class="dt-name">🪆 Nested-frame</span><span class="verdict idle" id="dash-verdict-nested">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-nested">Not run yet.</div><div class="dt-fix" id="dash-fix-nested"></div></div>
+      <div class="dash-tile" id="dash-tile-headers"><div class="dt-head"><span class="dt-name">📋 Response headers</span><span class="verdict idle" id="dash-verdict-headers">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-headers">Not run yet.</div><div class="dt-fix" id="dash-fix-headers"></div></div>
+      <div class="dash-tile" id="dash-tile-overlay"><div class="dt-head"><span class="dt-name">🎭 Overlay PoC</span><span class="verdict idle" id="dash-verdict-overlay">⚪ Not built</span></div><div class="dt-detail" id="dash-detail-overlay">Not built yet.</div><div class="dt-fix" id="dash-fix-overlay"></div></div>
+      <div class="dash-tile" id="dash-tile-drag"><div class="dt-head"><span class="dt-name">🖱️ Drag-jacking</span><span class="verdict idle" id="dash-verdict-drag">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-drag">Manual — see Advanced tab.</div><div class="dt-fix" id="dash-fix-drag"></div></div>
+      <div class="dash-tile" id="dash-tile-postmsg"><div class="dt-head"><span class="dt-name">📡 postMessage</span><span class="verdict idle" id="dash-verdict-postmsg">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-postmsg">Not run yet.</div><div class="dt-fix" id="dash-fix-postmsg"></div></div>
+      <div class="dash-tile" id="dash-tile-timing"><div class="dt-head"><span class="dt-name">⏱️ Timing bypass</span><span class="verdict idle" id="dash-verdict-timing">⚪ Not tested</span></div><div class="dt-detail" id="dash-detail-timing">Manual — see Advanced tab.</div><div class="dt-fix" id="dash-fix-timing"></div></div>
     </div>
 
     <div class="overall-suggestions" id="overallSuggestions"></div>
@@ -232,7 +255,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     <div class="hero">
       <div class="eyebrow">Frame &amp; overlay demo</div>
       <h1>🛡️ Clickjacking Validator</h1>
-      <p>Enter two URLs: one for display, one for the iframe source. Watch for framing &amp; simulate an overlay attack.</p>
+      <p>Enter two URLs: one for display, one for the iframe source. Watch for framing &amp; simulate an overlay attack. Or just use the Smart Scanner above.</p>
     </div>
 
     <div class="card">
@@ -258,7 +281,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
       </div>
 
       <div class="btns" id="classicConfirmBtns" style="display:none;margin-top:12px;">
-        <span style="font-family:var(--mono);font-size:12px;color:var(--text-lo);align-self:center;">What do you see above?</span>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--text-lo);">What do you see above?</span>
         <button class="btn danger" id="classicMarkVuln">👁️ Real content — Vulnerable</button>
         <button class="btn ghost" id="classicMarkProtected">🚫 Blank / blocked — Protected</button>
       </div>
@@ -281,16 +304,10 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     <div class="hero">
       <div class="eyebrow">Advanced test suite</div>
       <h1>🧪 Advanced Clickjacking Lab</h1>
-      <p>Six focused test modules feeding the dashboard above. Tap 📖 Guide any time for how each one works.</p>
+      <p>Granular controls behind the Smart Scanner above — useful for re-running one check, or for the two tests that need your hands on the mouse.</p>
     </div>
 
     <div class="warn-banner">⚠️ Only run these tests against systems you own or are explicitly authorized to assess.</div>
-
-    <div class="card">
-      <h2>🎯 Target</h2>
-      <p class="desc">Set once — every module below reuses it. (Running the Classic test also fills this in automatically.)</p>
-      <div class="field"><label>🔗 Target URL</label><input type="text" id="globalTarget" placeholder="https://example.com"></div>
-    </div>
 
     <!-- 1. Nested frame bypass -->
     <div class="card">
@@ -300,13 +317,13 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
         <button class="btn primary" id="nestedRunBtn">🔍 Run nested-frame test</button>
         <button class="btn ghost" id="nestedResetBtn">↺ Reset</button>
       </div>
-      <div class="info-line" id="nestedInfo">ℹ️ Set a target above, then run the test.</div>
+      <div class="info-line" id="nestedInfo">ℹ️ Set a target in the Smart Scanner above, then run the test.</div>
       <div class="frame-shell" id="nestedShell">
         <span class="frame-label">depth 1 → 2 → 3</span>
         <iframe id="nestedFrame1" src="about:blank" title="nested frame depth 1"></iframe>
       </div>
       <div class="btns" id="nestedConfirmBtns" style="display:none;margin-top:12px;">
-        <span style="font-family:var(--mono);font-size:12px;color:var(--text-lo);align-self:center;">What's visible at the innermost frame?</span>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--text-lo);">What's visible at the innermost frame?</span>
         <button class="btn danger" id="nestedMarkVuln">👁️ Real content — Vulnerable</button>
         <button class="btn ghost" id="nestedMarkProtected">🚫 Blank / blocked — Protected</button>
       </div>
@@ -353,11 +370,14 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
 
     <!-- 3. Drag & drop -->
     <div class="card">
-      <h2>🖱️ Drag-jacking simulator <span class="kind-tag">technique demo</span></h2>
-      <p class="desc">Some sites only guard against <em>clicks</em>, not drags. Drag the decoy chip onto the drop zone to see the technique in action.</p>
+      <h2>🖱️ Drag-and-Drop Bypass Check <span class="kind-tag manual">manual — real gesture required</span></h2>
+      <div class="why-box">
+        <p><strong>What this checks:</strong> some sites only guard against <em>clicks</em>. An attacker can hide a real control under an invisible layer so that <em>dragging</em> something across it — not clicking — triggers the action underneath.</p>
+        <p><strong>Why it's manual:</strong> browsers deliberately reject scripted/fake drag events as a security measure, so this needs an actual mouse gesture from you. It can't be included in the Smart Scanner.</p>
+      </div>
       <div class="btns"><button class="btn ghost" id="dragResetBtn">↺ Reset</button></div>
-      <div class="row"><div style="flex:1;min-width:180px;"><span class="draggable" id="dragChip" draggable="true">⠿ Drag me</span></div></div>
-      <div class="drop-zone" id="dropZone">Drop the chip here — over where a real target's button would sit</div>
+      <div class="row"><div style="flex:1;min-width:180px;"><span class="draggable" id="dragChip" draggable="true">⠿ Drag me onto the zone below</span></div></div>
+      <div class="drop-zone" id="dropZone">Drop zone — imagine this sits directly over a real target's sensitive button</div>
       <div class="verdict-row"><span class="verdict idle" id="verdict-drag">⚪ Not tested</span></div>
       <div class="fixbox" id="fix-drag"></div>
     </div>
@@ -378,12 +398,12 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     <!-- 5. Header inspector -->
     <div class="card">
       <h2>📋 Response header inspector <span class="kind-tag verdict">verdict test</span></h2>
-      <p class="desc">Checks for <code>X-Frame-Options</code>, <code>Content-Security-Policy: frame-ancestors</code>, and <code>Permissions-Policy</code>. Most sites block the browser from reading these cross-origin — use the curl fallback and paste the output back for an automatic verdict.</p>
-      <div class="btns"><button class="btn primary" id="headerCheckBtn">🔍 Check headers</button></div>
-      <div class="info-line" id="headerInfo">ℹ️ Set a target above, then check headers.</div>
+      <p class="desc">Checks for <code>X-Frame-Options</code>, <code>Content-Security-Policy: frame-ancestors</code>, and <code>Permissions-Policy</code>. Tries a direct read first, then automatically relays through a public CORS proxy (if enabled above) — the curl command below is always shown too, for your report or if both automatic paths fail.</p>
+      <div class="btns"><button class="btn primary" id="headerCheckBtn">🔍 Check headers automatically</button></div>
+      <div class="info-line" id="headerInfo">ℹ️ Set a target in the Smart Scanner above, then check headers.</div>
       <pre class="code" id="headerCurl" style="display:none;"></pre>
       <div class="field" style="margin-top:12px;">
-        <label>📋 Paste curl output here (optional, for an automatic verdict)</label>
+        <label>📋 Or paste curl output here for a manual verdict</label>
         <textarea id="headerPaste" rows="4" placeholder="Paste the terminal output of the curl command here…"></textarea>
       </div>
       <div class="btns"><button class="btn" id="headerParseBtn">🔎 Parse pasted output</button></div>
@@ -393,8 +413,8 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
 
     <!-- 6. Timing bypass -->
     <div class="card">
-      <h2>⏱️ Timing / multi-step bypass test <span class="kind-tag">technique demo</span></h2>
-      <p class="desc">Some confirmation flows only need two clicks in quick succession. This times a two-click sequence so you can note the window a real overlay would need.</p>
+      <h2>⏱️ Timing / multi-step bypass test <span class="kind-tag manual">manual — real gesture required</span></h2>
+      <p class="desc">Some confirmation flows only need two clicks in quick succession. This times a real two-click sequence from you so you can note the window a real overlay would need.</p>
       <div class="btns">
         <button class="btn primary" id="timingBtn">Click 1 of 2</button>
         <button class="btn ghost" id="timingResetBtn">↺ Reset</button>
@@ -415,32 +435,32 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
 <div class="drawer" id="drawer">
   <div class="drawer-head"><strong style="font-family:var(--mono);">📖 How to use this tool</strong><button class="close-btn" id="drawerClose">✕</button></div>
 
-  <h3>🎯 Target</h3>
-  <p>Paste the URL you're authorized to test once, either here or via the Classic tab. Every module below reuses it.</p>
+  <h3>🔎 Smart Scanner</h3>
+  <p>Set a target once, click "Run Full Scan," and watch the console. It checks headers (direct, then via proxy if enabled), loads the classic and nested frame tests, loads the overlay preview, and sends a postMessage probe — all automatically. If the header check gets a clear answer, the frame tests are marked automatically too; otherwise you'll be asked to confirm visually.</p>
 
   <h3>🛡️ Classic Test</h3>
-  <p>Loads the target directly in an iframe. Look at the frame, then click "Real content" or "Blank/blocked" — the browser can't tell you this programmatically due to cross-origin restrictions, so your eyes are the verdict.</p>
+  <p>Loads the target directly in an iframe. Look at the frame, then click "Real content" or "Blank/blocked" — cross-origin restrictions mean the browser can't tell you this programmatically, so your eyes are the verdict when the header check is inconclusive.</p>
 
   <h3>🪆 Nested-frame bypass</h3>
-  <p>Frames the target three layers deep to check whether a simple frame-busting script (one that only compares <code>top</code> vs <code>self</code>) can be defeated by adding an extra layer. Confirm the result the same way as the Classic test.</p>
+  <p>Frames the target three layers deep to check whether a client-side-only frame-busting script can be defeated by adding an extra layer of framing.</p>
 
   <h3>🎭 Overlay PoC builder</h3>
-  <p>Drag the sliders to position a decoy button over the framed target, click "Load target", then <strong>"Open live PoC"</strong> to launch the exact attack page in a new tab. Click the decoy there — if it sits over real, clickable content, the overlay works. Download or copy the HTML for your report.</p>
+  <p>Drag the sliders to position a decoy button over the framed target, then <strong>"Open live PoC"</strong> to launch the exact attack page in a new tab. Click the decoy there — if it sits over real, clickable content, the overlay works. Download or copy the HTML for your report.</p>
 
   <h3>🖱️ Drag-jacking</h3>
-  <p>Drag the chip onto the drop zone. This demonstrates that drag interactions can reach through a frame even when a site only guards against clicks — useful context alongside the verdict tests, not an independent pass/fail.</p>
+  <p>Drag the chip onto the drop zone. Demonstrates that drag interactions can bypass click-only defenses. Needs a real mouse gesture — browsers block scripted drag events, so it can't be scanned automatically.</p>
 
   <h3>📡 postMessage tester</h3>
-  <p>Load a target in the Overlay builder first. Sending a probe checks whether the page's message handler responds to unsolicited, wildcard-origin messages — worth a closer look if it does.</p>
+  <p>Load a target in the Overlay builder first. Checks whether the page's message handler responds to unsolicited, wildcard-origin messages — worth a closer look if it does.</p>
 
   <h3>📋 Header inspector</h3>
-  <p>Tries to read framing headers directly first. Most sites block this via CORS, so run the printed <code>curl</code> command in a terminal and paste the output back in for an automatic verdict.</p>
+  <p>Now checks automatically: direct fetch first, then a chain of public CORS proxies if direct access is blocked. Paste curl output any time for a manual override.</p>
 
   <h3>⏱️ Timing test</h3>
-  <p>Times a two-click sequence. A fast completion flags that a real confirm-flow could be vulnerable to a repositioned overlay between clicks.</p>
+  <p>Times a real two-click sequence. Fast completions flag that a confirm-flow could be vulnerable to a repositioned overlay between clicks.</p>
 
   <h3>📊 Dashboard &amp; reports</h3>
-  <p>Tracks every module's verdict in one place and suggests a fix wherever something's vulnerable or worth reviewing. Use "Generate report image" for a shareable PNG, or the Markdown buttons for a text report.</p>
+  <p>Tracks every module's verdict and suggests a fix wherever something's vulnerable or worth reviewing. "Generate report image" makes a shareable PNG; the Markdown buttons make a text report.</p>
 </div>
 
 <script>
@@ -450,7 +470,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
   /* ============================================================
      Theme toggle
      ============================================================ */
-  (function themeModule() {
+  (function () {
     const KEY = 'cj-theme';
     const root = document.documentElement;
     if ((localStorage.getItem(KEY) || 'dark') === 'light') root.setAttribute('data-theme', 'light');
@@ -468,7 +488,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
   /* ============================================================
      Tab switching
      ============================================================ */
-  (function tabModule() {
+  (function () {
     const tabBtns = document.querySelectorAll('.tab');
     const panels = { classic: document.getElementById('panel-classic'), advanced: document.getElementById('panel-advanced') };
     function go(name) {
@@ -483,7 +503,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
   /* ============================================================
      Guide drawer
      ============================================================ */
-  (function drawerModule() {
+  (function () {
     const drawer = document.getElementById('drawer');
     const overlay = document.getElementById('drawerOverlay');
     function open() { drawer.classList.add('open'); overlay.classList.add('open'); }
@@ -494,7 +514,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
   })();
 
   /* ============================================================
-     Shared helpers
+     Shared helpers & state
      ============================================================ */
   function normalizeUrl(raw) {
     if (!raw) return '';
@@ -502,6 +522,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     catch (e) { return ''; }
   }
   function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
   const VERDICT = {
     idle:         { icon:'⚪', label:'Not tested' },
@@ -510,6 +531,9 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     inconclusive: { icon:'🟡', label:'Inconclusive' },
     info:         { icon:'🔵', label:'Info' },
   };
+  const STATE_COLORS = { idle:'#8592A0', vulnerable:'#FF5D5D', protected:'#34D399', inconclusive:'#FFB020', info:'#5EA1FF' };
+  const STATE_LABELS = { idle:'NOT TESTED', vulnerable:'VULNERABLE', protected:'PROTECTED', inconclusive:'INCONCLUSIVE', info:'INFO' };
+
   function paintVerdict(el, state, customLabel) {
     if (!el) return;
     const m = VERDICT[state] || VERDICT.idle;
@@ -521,7 +545,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     classic:  { vulnerable:"Add response header X-Frame-Options: DENY or Content-Security-Policy: frame-ancestors 'none' (or a trusted-origin allow-list) to this page." },
     nested:   { vulnerable:"Same header fix applies — and confirm the protection isn't only a client-side frame-busting script, since those can miss nested frames." },
     headers:  { vulnerable:"No frame-ancestors / X-Frame-Options header was found. Add Content-Security-Policy: frame-ancestors 'self' (or 'none').",
-                inconclusive:"Run the curl command above (or paste its output) to confirm manually — the browser couldn't read these headers cross-origin." },
+                inconclusive:"Automatic checks couldn't reach a verdict. Run the curl command above (or paste its output) to confirm manually." },
     overlay:  { info:"This is a PoC builder, not a verdict test. Use \"Open live PoC\" to try the constructed attack page yourself." },
     drag:     { info:"Drag interactions can bypass click-only defenses. Fixing the framing tests above closes this too." },
     postmsg:  { inconclusive:"The target responded to an unsolicited wildcard-origin probe. Check that its message handler validates event.origin before trusting the payload.",
@@ -536,9 +560,9 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     nested:   { label:'Nested-frame bypass',     state:'idle', detail:'Not run yet.' },
     headers:  { label:'Response headers',        state:'idle', detail:'Not run yet.' },
     overlay:  { label:'Overlay PoC',             state:'idle', detail:'Not built yet.' },
-    drag:     { label:'Drag-jacking',            state:'idle', detail:'Not run yet.' },
+    drag:     { label:'Drag-jacking',            state:'idle', detail:'Manual — see Advanced tab.' },
     postmsg:  { label:'postMessage exposure',    state:'idle', detail:'Not run yet.' },
-    timing:   { label:'Timing bypass',           state:'idle', detail:'Not run yet.' },
+    timing:   { label:'Timing bypass',           state:'idle', detail:'Manual — see Advanced tab.' },
   };
 
   let testsRun = 0;
@@ -574,6 +598,9 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
 
       const dd = document.getElementById('dash-detail-' + key);
       if (dd) dd.textContent = r.detail;
+
+      const tile = document.getElementById('dash-tile-' + key);
+      if (tile) tile.style.borderLeftColor = STATE_COLORS[r.state];
 
       const note = noteFor(key, r.state);
       const localNote = document.getElementById('fix-' + key);
@@ -616,8 +643,142 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
   }
 
   /* ============================================================
-     Classic panel logic
+     Scan console
      ============================================================ */
+  function logC(msg) {
+    const el = document.getElementById('scanConsole');
+    if (el.querySelector('.entry.muted')) el.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    el.appendChild(div);
+    el.scrollTop = el.scrollHeight;
+  }
+  document.getElementById('scanClearBtn').addEventListener('click', () => {
+    document.getElementById('scanConsole').innerHTML = '<div class="entry muted">Console cleared.</div>';
+    document.getElementById('scanProgressFill').style.width = '0%';
+  });
+  function setScanProgress(step, total) {
+    document.getElementById('scanProgressFill').style.width = Math.round((step / total) * 100) + '%';
+  }
+
+  /* ============================================================
+     Header inspector — direct fetch, then CORS-proxy chain
+     ============================================================ */
+  const HEADERS_OF_INTEREST = ['x-frame-options', 'content-security-policy', 'permissions-policy'];
+  const PROXIES = [
+    { name: 'corsproxy.io',    build: u => `https://corsproxy.io/?url=${encodeURIComponent(u)}` },
+    { name: 'allorigins.win',  build: u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}` },
+    { name: 'codetabs.com',    build: u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}` },
+  ];
+
+  function buildCurlCmd(target) {
+    return `curl -sI "${target}" | grep -iE "x-frame-options|content-security-policy|permissions-policy"
+
+# What to look for:
+#   X-Frame-Options: DENY | SAMEORIGIN         -> framing blocked / restricted
+#   Content-Security-Policy: frame-ancestors …  -> modern replacement, takes precedence
+#   No output at all                            -> likely vulnerable to framing`;
+  }
+
+  async function runHeaderCheck(target, log) {
+    log = log || function () {};
+    log(`Checking headers for ${target}`);
+
+    try {
+      const res = await fetch(target, { method: 'HEAD', mode: 'cors' });
+      const found = HEADERS_OF_INTEREST.map(h => [h, res.headers.get(h)]).filter(([, v]) => v);
+      if (found.length) {
+        log(`✓ Direct fetch exposed: ${found.map(([k]) => k).join(', ')}`);
+        return { state: 'protected', detail: found.map(([k, v]) => `${k}: ${v}`).join(' · ') + ' (direct)' };
+      }
+      log('Direct fetch succeeded but exposed no matching headers (inconclusive on its own)');
+    } catch (e) {
+      log('✗ Direct fetch blocked by CORS');
+    }
+
+    const useProxy = document.getElementById('useProxyToggle').checked;
+    if (!useProxy) {
+      log('Proxy relay disabled — use the curl command below to verify manually.');
+      return { state: 'inconclusive', detail: 'Could not read headers directly; proxy relay disabled.' };
+    }
+
+    for (const p of PROXIES) {
+      log(`→ Trying proxy relay: ${p.name}…`);
+      try {
+        const res = await fetch(p.build(target), { method: 'GET' });
+        const found = HEADERS_OF_INTEREST.map(h => [h, res.headers.get(h)]).filter(([, v]) => v);
+        if (found.length) {
+          log(`✓ ${p.name} exposed: ${found.map(([k]) => k).join(', ')}`);
+          return { state: 'protected', detail: found.map(([k, v]) => `${k}: ${v}`).join(' · ') + ` (via ${p.name})` };
+        }
+        if (res.ok) {
+          log(`${p.name} responded (HTTP ${res.status}) with no matching headers`);
+          return { state: 'vulnerable', detail: `No framing-restriction header found (checked via ${p.name}).` };
+        }
+        log(`${p.name} returned HTTP ${res.status}`);
+      } catch (e) {
+        log(`✗ ${p.name} unreachable or blocked`);
+      }
+    }
+    log('All automatic methods failed — use the curl command below.');
+    return { state: 'inconclusive', detail: 'Automatic header check failed via all methods — verify with curl.' };
+  }
+
+  (function headerModule() {
+    const btn = document.getElementById('headerCheckBtn');
+    const info = document.getElementById('headerInfo');
+    const curlBlock = document.getElementById('headerCurl');
+    const pasteEl = document.getElementById('headerPaste');
+    const parseBtn = document.getElementById('headerParseBtn');
+
+    btn.addEventListener('click', async () => {
+      const target = currentTarget();
+      if (!target) { info.textContent = '⚠️ Set a target URL first.'; info.className = 'info-line warn'; return; }
+      info.textContent = '⏳ Checking automatically…'; info.className = 'info-line';
+      btn.disabled = true;
+
+      const result = await runHeaderCheck(target, msg => { info.textContent = 'ℹ️ ' + msg; });
+      setResult('headers', result.state, result.detail);
+      bumpTests();
+      btn.disabled = false;
+
+      if (result.state === 'protected') { info.innerHTML = '✅ ' + escapeHtml(result.detail); info.className = 'info-line safe'; }
+      else if (result.state === 'vulnerable') { info.innerHTML = '🔴 ' + escapeHtml(result.detail); info.className = 'info-line warn'; }
+      else { info.innerHTML = '🟡 Automatic check was inconclusive — use the command below, or paste its output.'; info.className = 'info-line warn'; }
+
+      curlBlock.style.display = 'block';
+      curlBlock.textContent = buildCurlCmd(target);
+    });
+
+    parseBtn.addEventListener('click', () => {
+      const text = pasteEl.value.trim();
+      if (!text) { alert('Paste the curl output first.'); return; }
+      const hasXfo = /x-frame-options\s*:/i.test(text);
+      const hasCsp = /content-security-policy\s*:[^\n]*frame-ancestors/i.test(text);
+      if (hasXfo || hasCsp) {
+        setResult('headers', 'protected', 'Confirmed from pasted output: a framing-restriction header is present.');
+        info.innerHTML = '✅ Pasted output shows a framing-restriction header.'; info.className = 'info-line safe';
+      } else {
+        setResult('headers', 'vulnerable', 'Confirmed from pasted output: no framing-restriction header found.');
+        info.innerHTML = '🔴 Pasted output shows no X-Frame-Options or frame-ancestors header.'; info.className = 'info-line warn';
+      }
+      bumpTests();
+    });
+  })();
+
+  /* ============================================================
+     Classic frame — shared action + button wiring
+     ============================================================ */
+  function loadClassicFrame(target) {
+    const testFrame = document.getElementById('testFrame');
+    document.getElementById('classicConfirmBtns').style.display = 'flex';
+    testFrame.src = 'about:blank';
+    setTimeout(() => { testFrame.src = target; }, 80);
+    setResult('classic', 'idle', 'Loaded — awaiting a visual check.');
+    bumpTests();
+  }
+
   (function classicModule() {
     const displayUrlEl = document.getElementById('displayUrl');
     const iframeUrlEl  = document.getElementById('iframeUrl');
@@ -627,8 +788,6 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     const infoLine     = document.getElementById('infoLine');
     const frameShell   = document.getElementById('frameShell');
     const testFrame    = document.getElementById('testFrame');
-    const confirmBtns  = document.getElementById('classicConfirmBtns');
-
     let decoyEl = null;
 
     function setInfo(html, tone) { infoLine.className = 'info-line' + (tone ? ` ${tone}` : ''); infoLine.innerHTML = html; }
@@ -637,11 +796,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
       const target = normalizeUrl(iframeUrlEl.value.trim());
       if (!target) { setInfo('⚠️ Enter a valid iframe source URL first.', 'warn'); return; }
       setInfo('⏳ Loading target inside the frame below…');
-      testFrame.src = 'about:blank';
-      setTimeout(() => { testFrame.src = target; }, 80);
-      confirmBtns.style.display = 'flex';
-      setResult('classic', 'idle', 'Loaded — awaiting your visual check.');
-      bumpTests();
+      loadClassicFrame(target);
       if (!globalTargetEl.value.trim()) { globalTargetEl.value = iframeUrlEl.value.trim(); currentTarget(); }
     });
 
@@ -657,7 +812,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     resetBtn.addEventListener('click', () => {
       displayUrlEl.value = ''; iframeUrlEl.value = ''; testFrame.src = 'about:blank';
       setInfo('ℹ️ Enter URLs and click <strong>Test framing</strong>, then look at the frame below.');
-      confirmBtns.style.display = 'none';
+      document.getElementById('classicConfirmBtns').style.display = 'none';
       setResult('classic', 'idle', 'Not run yet.');
       if (decoyEl) { decoyEl.remove(); decoyEl = null; overlayBtn.textContent = '🎭 Overlay attack'; }
     });
@@ -679,103 +834,92 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
   })();
 
   /* ============================================================
-     Nested frame bypass test
+     Nested frame — shared action + button wiring
      ============================================================ */
-  (function nestedFrameModule() {
-    const runBtn   = document.getElementById('nestedRunBtn');
-    const resetBtn = document.getElementById('nestedResetBtn');
-    const info     = document.getElementById('nestedInfo');
-    const frame1   = document.getElementById('nestedFrame1');
-    const confirmBtns = document.getElementById('nestedConfirmBtns');
-
+  function buildNestedFrame(target) {
+    const frame1 = document.getElementById('nestedFrame1');
+    const info = document.getElementById('nestedInfo');
     const FILL = 'width:100%;height:100%;border:0;';
 
-    runBtn.addEventListener('click', () => {
-      const target = currentTarget();
-      if (!target) { info.textContent = '⚠️ Set a target URL first.'; info.className = 'info-line warn'; return; }
-      info.textContent = '⏳ Building 3-level nested frame…';
-      info.className = 'info-line';
+    info.textContent = '⏳ Building 3-level nested frame…'; info.className = 'info-line';
 
-      // Every nested level gets an explicit height:100% chain (html + body + iframe)
-      // so the innermost frame actually fills the visible area instead of collapsing.
-      const level3 = `<iframe src="${target}" style="${FILL}"></iframe>`;
-      const level2Doc = `<!DOCTYPE html><html style="height:100%;"><body style="margin:0;height:100%;">${level3}</body></html>`;
-      const level2 = `<iframe style="${FILL}" srcdoc="${level2Doc.replace(/"/g, '&quot;')}"></iframe>`;
-      const level1Doc = `<!DOCTYPE html><html style="height:100%;"><body style="margin:0;height:100%;">${level2}</body></html>`;
+    const level3 = `<iframe src="${target}" style="${FILL}"></iframe>`;
+    const level2Doc = `<!DOCTYPE html><html style="height:100%;"><body style="margin:0;height:100%;">${level3}</body></html>`;
+    const level2 = `<iframe style="${FILL}" srcdoc="${level2Doc.replace(/"/g, '&quot;')}"></iframe>`;
+    const level1Doc = `<!DOCTYPE html><html style="height:100%;"><body style="margin:0;height:100%;">${level2}</body></html>`;
 
-      frame1.removeAttribute('srcdoc');
-      frame1.src = 'about:blank';
+    frame1.removeAttribute('srcdoc');
+    frame1.src = 'about:blank';
+    return new Promise(resolve => {
       setTimeout(() => {
         frame1.srcdoc = level1Doc;
         setTimeout(() => {
-          info.textContent = 'ℹ️ Nested frame built. Look at the innermost frame above, then confirm what you see below.';
+          info.textContent = 'ℹ️ Nested frame built. Look at the innermost frame above, then confirm below.';
           info.className = 'info-line';
-          confirmBtns.style.display = 'flex';
-          setResult('nested', 'idle', 'Built — awaiting your visual check.');
+          document.getElementById('nestedConfirmBtns').style.display = 'flex';
+          setResult('nested', 'idle', 'Built — awaiting a visual check.');
           bumpTests();
+          resolve();
         }, 400);
       }, 80);
     });
+  }
 
-    document.getElementById('nestedMarkVuln').addEventListener('click', () => {
-      setResult('nested', 'vulnerable', 'Real content visible through nested frames.');
+  (function nestedModule() {
+    document.getElementById('nestedRunBtn').addEventListener('click', () => {
+      const target = currentTarget();
+      const info = document.getElementById('nestedInfo');
+      if (!target) { info.textContent = '⚠️ Set a target URL first.'; info.className = 'info-line warn'; return; }
+      buildNestedFrame(target);
     });
-    document.getElementById('nestedMarkProtected').addEventListener('click', () => {
-      setResult('nested', 'protected', 'Innermost frame was blank or blocked.');
-    });
-
-    resetBtn.addEventListener('click', () => {
+    document.getElementById('nestedMarkVuln').addEventListener('click', () => setResult('nested', 'vulnerable', 'Real content visible through nested frames.'));
+    document.getElementById('nestedMarkProtected').addEventListener('click', () => setResult('nested', 'protected', 'Innermost frame was blank or blocked.'));
+    document.getElementById('nestedResetBtn').addEventListener('click', () => {
+      const frame1 = document.getElementById('nestedFrame1');
       frame1.removeAttribute('srcdoc'); frame1.src = 'about:blank';
-      info.textContent = 'ℹ️ Set a target above, then run the test.'; info.className = 'info-line';
-      confirmBtns.style.display = 'none';
+      document.getElementById('nestedInfo').textContent = 'ℹ️ Set a target in the Smart Scanner above, then run the test.';
+      document.getElementById('nestedInfo').className = 'info-line';
+      document.getElementById('nestedConfirmBtns').style.display = 'none';
       setResult('nested', 'idle', 'Not run yet.');
     });
   })();
 
   /* ============================================================
-     Overlay PoC builder
+     Overlay PoC builder — shared action + button wiring
      ============================================================ */
-  (function overlayModule() {
-    const decoyText  = document.getElementById('decoyText');
-    const xSlider    = document.getElementById('decoyX');
-    const ySlider    = document.getElementById('decoyY');
-    const opSlider   = document.getElementById('decoyOpacity');
-    const rotSlider  = document.getElementById('decoyRotate');
-    const xVal = document.getElementById('decoyXVal'), yVal = document.getElementById('decoyYVal');
-    const opVal = document.getElementById('decoyOpacityVal'), rotVal = document.getElementById('decoyRotateVal');
-    const runBtn = document.getElementById('overlayRunBtn');
-    const openBtn = document.getElementById('overlayOpenBtn');
-    const downloadBtn = document.getElementById('overlayDownloadBtn');
-    const copyBtn = document.getElementById('overlayCopyBtn');
-    const resetBtn = document.getElementById('overlayResetBtn');
+  let overlayDecoyEl = null;
+  let overlayLoadedTarget = '';
+
+  function overlayEnsureDecoy() {
     const shell = document.getElementById('overlayShell');
-    const frame = document.getElementById('overlayFrame');
-    const codeOut = document.getElementById('overlayCode');
-
-    let decoyEl = null;
-    let loadedTarget = '';
-
-    function ensureDecoy() {
-      if (decoyEl) return decoyEl;
-      decoyEl = document.createElement('button');
-      decoyEl.className = 'decoy-btn';
-      shell.appendChild(decoyEl);
-      return decoyEl;
-    }
-    function renderDecoy() {
-      const el = ensureDecoy();
-      el.textContent = decoyText.value || 'Decoy';
-      el.style.left = `${xSlider.value}%`; el.style.top = `${ySlider.value}%`;
-      el.style.transform = `translate(-50%,-50%) rotate(${rotSlider.value}deg)`;
-      el.style.opacity = String(Number(opSlider.value) / 100);
-      xVal.textContent = `${xSlider.value}%`; yVal.textContent = `${ySlider.value}%`;
-      opVal.textContent = `${opSlider.value}%`; rotVal.textContent = `${rotSlider.value}°`;
-      renderCode();
-    }
-    function renderCode() {
-      const target = loadedTarget || 'https://TARGET-URL-HERE';
-      const text = escapeHtml(decoyText.value || 'Decoy');
-      const html = `<!-- Clickjacking PoC — authorized testing only -->
+    if (overlayDecoyEl) return overlayDecoyEl;
+    overlayDecoyEl = document.createElement('button');
+    overlayDecoyEl.className = 'decoy-btn';
+    shell.appendChild(overlayDecoyEl);
+    return overlayDecoyEl;
+  }
+  function overlayRenderDecoy() {
+    const decoyText = document.getElementById('decoyText');
+    const xSlider = document.getElementById('decoyX'), ySlider = document.getElementById('decoyY');
+    const opSlider = document.getElementById('decoyOpacity'), rotSlider = document.getElementById('decoyRotate');
+    const el = overlayEnsureDecoy();
+    el.textContent = decoyText.value || 'Decoy';
+    el.style.left = `${xSlider.value}%`; el.style.top = `${ySlider.value}%`;
+    el.style.transform = `translate(-50%,-50%) rotate(${rotSlider.value}deg)`;
+    el.style.opacity = String(Number(opSlider.value) / 100);
+    document.getElementById('decoyXVal').textContent = `${xSlider.value}%`;
+    document.getElementById('decoyYVal').textContent = `${ySlider.value}%`;
+    document.getElementById('decoyOpacityVal').textContent = `${opSlider.value}%`;
+    document.getElementById('decoyRotateVal').textContent = `${rotSlider.value}°`;
+    overlayRenderCode();
+  }
+  function overlayRenderCode() {
+    const decoyText = document.getElementById('decoyText');
+    const xSlider = document.getElementById('decoyX'), ySlider = document.getElementById('decoyY');
+    const opSlider = document.getElementById('decoyOpacity'), rotSlider = document.getElementById('decoyRotate');
+    const target = overlayLoadedTarget || 'https://TARGET-URL-HERE';
+    const text = escapeHtml(decoyText.value || 'Decoy');
+    const html = `<!-- Clickjacking PoC — authorized testing only -->
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><title>Clickjacking PoC</title></head>
@@ -791,53 +935,50 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
   </div>
 </body>
 </html>`;
-      codeOut.textContent = html;
-      return html;
-    }
+    document.getElementById('overlayCode').textContent = html;
+    return html;
+  }
+  function loadOverlayFrame(target) {
+    const frame = document.getElementById('overlayFrame');
+    overlayLoadedTarget = target;
+    frame.src = 'about:blank';
+    setTimeout(() => { frame.src = target; }, 80);
+    overlayRenderDecoy();
+    bumpTests();
+    setResult('overlay', 'info', `Preview loaded for ${target}`);
+  }
 
-    [decoyText, xSlider, ySlider, opSlider, rotSlider].forEach(el => el.addEventListener('input', renderDecoy));
-
-    runBtn.addEventListener('click', () => {
+  (function overlayModule() {
+    ['decoyText', 'decoyX', 'decoyY', 'decoyOpacity', 'decoyRotate'].forEach(id =>
+      document.getElementById(id).addEventListener('input', overlayRenderDecoy)
+    );
+    document.getElementById('overlayRunBtn').addEventListener('click', () => {
       const target = currentTarget();
       if (!target) { alert('Set a target URL first.'); return; }
-      loadedTarget = target;
-      frame.src = 'about:blank';
-      setTimeout(() => { frame.src = target; }, 80);
-      renderDecoy();
-      bumpTests();
-      setResult('overlay', 'info', `Preview loaded for ${target}`);
+      loadOverlayFrame(target);
     });
-
-    openBtn.addEventListener('click', () => {
-      const html = renderCode();
-      if (!loadedTarget) { alert('Click "Load target" first so the PoC has a real target URL.'); return; }
+    document.getElementById('overlayOpenBtn').addEventListener('click', () => {
+      const html = overlayRenderCode();
+      if (!overlayLoadedTarget) { alert('Click "Load target" first so the PoC has a real target URL.'); return; }
       const blob = new Blob([html], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       window.open(url, '_blank');
       setTimeout(() => URL.revokeObjectURL(url), 60000);
     });
-
-    downloadBtn.addEventListener('click', () => {
-      downloadBlob('clickjacking-poc.html', renderCode(), 'text/html');
+    document.getElementById('overlayDownloadBtn').addEventListener('click', () => downloadBlob('clickjacking-poc.html', overlayRenderCode(), 'text/html'));
+    document.getElementById('overlayCopyBtn').addEventListener('click', async () => {
+      const html = overlayRenderCode();
+      const btn = document.getElementById('overlayCopyBtn');
+      try { await navigator.clipboard.writeText(html); btn.textContent = '✅ Copied'; setTimeout(() => { btn.textContent = '📋 Copy PoC HTML'; }, 1600); }
+      catch (e) { alert('Copy failed — use "Download PoC" instead.'); }
     });
-
-    copyBtn.addEventListener('click', async () => {
-      const html = renderCode();
-      try {
-        await navigator.clipboard.writeText(html);
-        copyBtn.textContent = '✅ Copied';
-        setTimeout(() => { copyBtn.textContent = '📋 Copy PoC HTML'; }, 1600);
-      } catch (e) { alert('Copy failed — use "Download PoC" instead, or select the code block manually.'); }
-    });
-
-    resetBtn.addEventListener('click', () => {
-      frame.src = 'about:blank';
-      if (decoyEl) { decoyEl.remove(); decoyEl = null; }
-      loadedTarget = ''; codeOut.textContent = '';
+    document.getElementById('overlayResetBtn').addEventListener('click', () => {
+      document.getElementById('overlayFrame').src = 'about:blank';
+      if (overlayDecoyEl) { overlayDecoyEl.remove(); overlayDecoyEl = null; }
+      overlayLoadedTarget = ''; document.getElementById('overlayCode').textContent = '';
       setResult('overlay', 'idle', 'Not built yet.');
     });
-
-    renderDecoy();
+    overlayRenderDecoy();
   })();
 
   /* ============================================================
@@ -846,132 +987,63 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
   (function dragModule() {
     const chip = document.getElementById('dragChip');
     const zone = document.getElementById('dropZone');
-    const resetBtn = document.getElementById('dragResetBtn');
-
     chip.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', 'cj-chip'); e.dataTransfer.effectAllowed = 'move'; });
     zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
     zone.addEventListener('dragleave', () => zone.classList.remove('over'));
     zone.addEventListener('drop', e => {
-      e.preventDefault();
-      zone.classList.remove('over');
+      e.preventDefault(); zone.classList.remove('over');
       zone.textContent = '✅ Drop registered — a drag-based interaction reached this zone.';
       bumpTests();
       setResult('drag', 'info', 'Drag interaction reached the drop zone.');
     });
-    resetBtn.addEventListener('click', () => {
-      zone.textContent = "Drop the chip here — over where a real target's button would sit";
-      setResult('drag', 'idle', 'Not run yet.');
+    document.getElementById('dragResetBtn').addEventListener('click', () => {
+      zone.textContent = "Drop zone — imagine this sits directly over a real target's sensitive button";
+      setResult('drag', 'idle', 'Manual — see Advanced tab.');
     });
   })();
 
   /* ============================================================
-     postMessage exposure tester
+     postMessage exposure tester — shared action + button wiring
      ============================================================ */
-  (function postMessageModule() {
-    const sendBtn  = document.getElementById('pmSendBtn');
-    const clearBtn = document.getElementById('pmClearBtn');
-    const log      = document.getElementById('pmLog');
+  let pmResponseCount = 0;
+  function pmLogEntry(text) {
+    const log = document.getElementById('pmLog');
+    if (log.textContent.includes('Log is empty') || log.textContent.includes('Log cleared')) log.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `<span class="t">[${new Date().toLocaleTimeString()}]</span> ${text}`;
+    log.appendChild(div);
+    while (log.children.length > 15) log.removeChild(log.firstChild);
+    log.scrollTop = log.scrollHeight;
+  }
+  function sendProbe() {
     const overlayFrame = document.getElementById('overlayFrame');
-    let responseCount = 0;
-
-    function logEntry(text) {
-      if (log.textContent.includes('Log is empty') || log.textContent.includes('Log cleared')) log.innerHTML = '';
-      const div = document.createElement('div');
-      div.className = 'entry';
-      div.innerHTML = `<span class="t">[${new Date().toLocaleTimeString()}]</span> ${text}`;
-      log.appendChild(div);
-      // Cap the log so a chatty target doesn't flood the panel.
-      while (log.children.length > 15) log.removeChild(log.firstChild);
-      log.scrollTop = log.scrollHeight;
+    if (!overlayFrame.contentWindow || overlayFrame.src === 'about:blank') {
+      pmLogEntry('⚠️ No target loaded — load one via "Load target" in the Overlay builder above first.');
+      return;
     }
+    const probe = { type: 'cj-probe', from: 'clickjacking-validator', ts: Date.now() };
+    try {
+      overlayFrame.contentWindow.postMessage(probe, '*');
+      pmLogEntry(`Sent probe → ${escapeHtml(JSON.stringify(probe))} (targetOrigin: *)`);
+      bumpTests();
+      if (REPORT.postmsg.state === 'idle') setResult('postmsg', 'info', 'Probe sent — no response yet.');
+    } catch (e) { pmLogEntry(`⚠️ postMessage failed: ${escapeHtml(e.message)}`); }
+  }
 
-    // Only log messages that actually came from our own test iframe — otherwise
-    // unrelated browser-extension traffic (e.g. Wappalyzer) shows up as noise.
+  (function postMessageModule() {
+    const overlayFrame = document.getElementById('overlayFrame');
     window.addEventListener('message', event => {
       if (!overlayFrame.contentWindow || event.source !== overlayFrame.contentWindow) return;
-      responseCount += 1;
+      pmResponseCount += 1;
       const preview = JSON.stringify(event.data).slice(0, 120);
-      logEntry(`Received from <strong>${escapeHtml(event.origin)}</strong>: ${escapeHtml(preview)}`);
-      setResult('postmsg', 'inconclusive', `${responseCount} response(s) received from the target frame.`);
+      pmLogEntry(`Received from <strong>${escapeHtml(event.origin)}</strong>: ${escapeHtml(preview)}`);
+      setResult('postmsg', 'inconclusive', `${pmResponseCount} response(s) received from the target frame.`);
     });
-
-    sendBtn.addEventListener('click', () => {
-      if (!overlayFrame.contentWindow || overlayFrame.src === 'about:blank') {
-        logEntry('⚠️ No target loaded — load one via "Load target" in the Overlay builder above first.');
-        return;
-      }
-      const probe = { type: 'cj-probe', from: 'clickjacking-validator', ts: Date.now() };
-      try {
-        overlayFrame.contentWindow.postMessage(probe, '*');
-        logEntry(`Sent probe → ${escapeHtml(JSON.stringify(probe))} (targetOrigin: *)`);
-        bumpTests();
-        if (REPORT.postmsg.state === 'idle') setResult('postmsg', 'info', 'Probe sent — no response yet.');
-      } catch (e) { logEntry(`⚠️ postMessage failed: ${escapeHtml(e.message)}`); }
-    });
-
-    clearBtn.addEventListener('click', () => { log.innerHTML = '<div class="entry">Log cleared.</div>'; responseCount = 0; });
-  })();
-
-  /* ============================================================
-     Header inspector
-     ============================================================ */
-  (function headerModule() {
-    const btn  = document.getElementById('headerCheckBtn');
-    const info = document.getElementById('headerInfo');
-    const curlBlock = document.getElementById('headerCurl');
-    const pasteEl = document.getElementById('headerPaste');
-    const parseBtn = document.getElementById('headerParseBtn');
-    const HEADERS = ['x-frame-options', 'content-security-policy', 'permissions-policy'];
-
-    btn.addEventListener('click', async () => {
-      const target = currentTarget();
-      if (!target) { info.textContent = '⚠️ Set a target URL first.'; info.className = 'info-line warn'; return; }
-      info.textContent = '⏳ Attempting to read response headers…'; info.className = 'info-line';
-      curlBlock.style.display = 'none';
-
-      try {
-        const res = await fetch(target, { method: 'HEAD', mode: 'cors' });
-        const found = HEADERS.map(h => [h, res.headers.get(h)]).filter(([, v]) => v);
-        if (found.length === 0) {
-          info.innerHTML = '⚠️ Request succeeded but no framing-related headers were readable. Verify with the command below.';
-          info.className = 'info-line warn';
-          setResult('headers', 'inconclusive', 'Headers not readable via fetch — verify with curl.');
-        } else {
-          const summary = found.map(([k, v]) => `${k}: ${v}`).join(' · ');
-          info.innerHTML = `✅ Readable headers: ${found.map(([k, v]) => `<strong>${k}</strong>: ${escapeHtml(v)}`).join(' · ')}`;
-          info.className = 'info-line safe';
-          setResult('headers', 'protected', summary);
-        }
-      } catch (e) {
-        info.innerHTML = '⚠️ Browser CORS policy blocked reading headers cross-origin (expected for most sites). Use the command below instead.';
-        info.className = 'info-line warn';
-        setResult('headers', 'inconclusive', 'Blocked by CORS — verify with curl.');
-      }
-
-      curlBlock.style.display = 'block';
-      curlBlock.textContent =
-`curl -sI "${target}" | grep -iE "x-frame-options|content-security-policy|permissions-policy"
-
-# What to look for:
-#   X-Frame-Options: DENY | SAMEORIGIN         -> framing blocked / restricted
-#   Content-Security-Policy: frame-ancestors …  -> modern replacement, takes precedence
-#   No output at all                            -> likely vulnerable to framing`;
-      bumpTests();
-    });
-
-    parseBtn.addEventListener('click', () => {
-      const text = pasteEl.value.trim();
-      if (!text) { alert('Paste the curl output first.'); return; }
-      const hasXfo = /x-frame-options\s*:/i.test(text);
-      const hasCsp = /content-security-policy\s*:[^\n]*frame-ancestors/i.test(text);
-      if (hasXfo || hasCsp) {
-        setResult('headers', 'protected', 'Confirmed from pasted output: a framing-restriction header is present.');
-        info.innerHTML = '✅ Pasted output shows a framing-restriction header.'; info.className = 'info-line safe';
-      } else {
-        setResult('headers', 'vulnerable', 'Confirmed from pasted output: no framing-restriction header found.');
-        info.innerHTML = '🔴 Pasted output shows no X-Frame-Options or frame-ancestors header.'; info.className = 'info-line warn';
-      }
-      bumpTests();
+    document.getElementById('pmSendBtn').addEventListener('click', sendProbe);
+    document.getElementById('pmClearBtn').addEventListener('click', () => {
+      document.getElementById('pmLog').innerHTML = '<div class="entry">Log cleared.</div>';
+      pmResponseCount = 0;
     });
   })();
 
@@ -980,10 +1052,8 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
      ============================================================ */
   (function timingModule() {
     const btn = document.getElementById('timingBtn');
-    const resetBtn = document.getElementById('timingResetBtn');
     const info = document.getElementById('timingInfo');
     let firstClickAt = null;
-
     btn.addEventListener('click', () => {
       if (firstClickAt === null) {
         firstClickAt = performance.now();
@@ -1001,20 +1071,71 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
       bumpTests();
       setResult('timing', fast ? 'inconclusive' : 'info', `${elapsed}ms between clicks.`);
     });
-
-    resetBtn.addEventListener('click', () => {
+    document.getElementById('timingResetBtn').addEventListener('click', () => {
       firstClickAt = null; btn.textContent = 'Click 1 of 2';
       info.textContent = 'ℹ️ Not started.'; info.className = 'info-line';
-      setResult('timing', 'idle', 'Not run yet.');
+      setResult('timing', 'idle', 'Manual — see Advanced tab.');
     });
   })();
 
   /* ============================================================
+     Smart Scanner orchestrator
+     ============================================================ */
+  document.getElementById('scanBtn').addEventListener('click', async () => {
+    const target = currentTarget();
+    const btn = document.getElementById('scanBtn');
+    if (!target) { alert('Set a target URL first.'); return; }
+
+    btn.disabled = true; btn.textContent = '⏳ Scanning…';
+    document.getElementById('scanConsole').innerHTML = '';
+    setScanProgress(0, 6);
+    logC(`▶ Starting scan for ${target}`);
+
+    logC('→ Checking response headers…');
+    const headerResult = await runHeaderCheck(target, logC);
+    setResult('headers', headerResult.state, headerResult.detail);
+    logC(headerResult.state === 'protected' ? '🟢 Framing-restriction header found'
+       : headerResult.state === 'vulnerable' ? '🔴 No framing-restriction header found'
+       : '🟡 Could not determine automatically');
+    setScanProgress(1, 6);
+
+    logC('→ Loading classic frame test…');
+    loadClassicFrame(target);
+    logC('→ Loading nested-frame test…');
+    await buildNestedFrame(target);
+
+    if (headerResult.state === 'protected') {
+      setResult('classic', 'protected', 'Inferred from response headers.');
+      setResult('nested', 'protected', 'Header-level protection blocks framing at any depth.');
+      logC('🟢 Classic & nested tests inferred: PROTECTED');
+    } else if (headerResult.state === 'vulnerable') {
+      setResult('classic', 'vulnerable', 'Inferred from response headers — no restriction found.');
+      setResult('nested', 'vulnerable', 'Inferred from response headers.');
+      logC('🔴 Classic & nested tests inferred: VULNERABLE (visually confirm below if you want to double-check)');
+    } else {
+      logC('🟡 Please confirm the classic & nested results visually in their cards below');
+    }
+    setScanProgress(3, 6);
+
+    logC('→ Loading overlay PoC preview…');
+    loadOverlayFrame(target);
+    setScanProgress(4, 6);
+
+    await sleep(900);
+    logC('→ Sending postMessage probe…');
+    sendProbe();
+    setScanProgress(5, 6);
+
+    logC('⚠ Drag-jacking & timing tests need a real mouse gesture — see the Advanced tab');
+    setScanProgress(6, 6);
+    logC(`✔ Scan complete — overall verdict: ${STATE_LABELS[computeOverallState()]}`);
+
+    btn.disabled = false; btn.textContent = '🔎 Run Full Scan';
+  });
+
+  /* ============================================================
      Report image (canvas) + Markdown export
      ============================================================ */
-  const STATE_COLORS = { idle:'#8592A0', vulnerable:'#FF5D5D', protected:'#34D399', inconclusive:'#FFB020', info:'#5EA1FF' };
-  const STATE_LABELS = { idle:'NOT TESTED', vulnerable:'VULNERABLE', protected:'PROTECTED', inconclusive:'INCONCLUSIVE', info:'INFO' };
-
   function wrapTextLines(ctx, text, maxWidth) {
     const words = text.split(' ');
     let lines = [], current = '';
@@ -1047,36 +1168,28 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     ctx.textBaseline = 'alphabetic';
     return w;
   }
-
   function buildReportImage() {
     const width = 860, padding = 32;
     const measure = document.createElement('canvas').getContext('2d');
-
     const rows = Object.entries(REPORT).map(([key, r]) => {
       const note = noteFor(key, r.state);
       measure.font = '11px "IBM Plex Mono", monospace';
       const noteLines = note ? wrapTextLines(measure, note, width - padding * 2 - 20) : [];
-      measure.font = '11px "IBM Plex Mono", monospace';
       const detailLines = r.detail ? wrapTextLines(measure, r.detail, width - padding * 2 - 160) : [];
       const h = 34 + detailLines.length * 15 + (noteLines.length ? noteLines.length * 15 + 10 : 0) + 18;
       return { key, r, noteLines, detailLines, h };
     });
-
-    const headerH = 130;
-    const footerH = 50;
+    const headerH = 130, footerH = 50;
     const height = headerH + rows.reduce((a, b) => a + b.h, 0) + footerH;
 
     const canvas = document.createElement('canvas');
     canvas.width = width; canvas.height = height;
     const ctx = canvas.getContext('2d');
-
-    ctx.fillStyle = '#0A0E13';
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#0A0E13'; ctx.fillRect(0, 0, width, height);
 
     ctx.fillStyle = '#E9EFF5';
     ctx.font = '700 22px Inter, sans-serif';
     ctx.fillText('🛡️ Clickjacking Assessment Report', padding, 42);
-
     ctx.font = '12px "IBM Plex Mono", monospace';
     ctx.fillStyle = '#8592A0';
     ctx.fillText('Target: ' + (currentTarget() || 'not set'), padding, 66);
@@ -1089,21 +1202,18 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     ctx.beginPath(); ctx.moveTo(padding, headerH - 6); ctx.lineTo(width - padding, headerH - 6); ctx.stroke();
 
     let cy = headerH;
-    rows.forEach(({ key, r, noteLines, detailLines, h }) => {
+    rows.forEach(({ r, noteLines, detailLines, h }) => {
       ctx.fillStyle = STATE_COLORS[r.state];
       ctx.fillRect(padding, cy + 6, 4, h - 20);
-
       ctx.fillStyle = '#E9EFF5';
       ctx.font = '600 14px Inter, sans-serif';
       ctx.fillText(r.label, padding + 16, cy + 20);
-
       drawPill(ctx, width - padding - 140, cy + 6, STATE_LABELS[r.state], STATE_COLORS[r.state], 140);
 
       let ny = cy + 20;
       ctx.font = '11px "IBM Plex Mono", monospace';
       ctx.fillStyle = '#8592A0';
       detailLines.forEach(line => { ny += 16; ctx.fillText(line, padding + 16, ny); });
-
       if (noteLines.length) {
         ny += 6;
         ctx.font = '11px "IBM Plex Mono", monospace';
@@ -1116,10 +1226,8 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     ctx.font = '11px "IBM Plex Mono", monospace';
     ctx.fillStyle = '#5B6672';
     ctx.fillText('Generated by Clickjacking Validator — for authorized security testing only.', padding, height - 18);
-
     return canvas;
   }
-
   function buildMarkdownReport() {
     const target = currentTarget() || '(not set)';
     const lines = Object.entries(REPORT).map(([key, r]) => {
@@ -1139,34 +1247,29 @@ ${lines.join('\n')}
 _Generated by Clickjacking Validator — for authorized security testing only._`;
   }
 
-  (function reportModule() {
-    document.getElementById('genImageBtn').addEventListener('click', () => {
-      const canvas = buildReportImage();
-      const dataUrl = canvas.toDataURL('image/png');
-      document.getElementById('reportImgPreview').src = dataUrl;
+  document.getElementById('genImageBtn').addEventListener('click', () => {
+    const dataUrl = buildReportImage().toDataURL('image/png');
+    document.getElementById('reportImgPreview').src = dataUrl;
+    document.getElementById('reportImgWrap').style.display = 'block';
+    document.getElementById('downloadImgBtn').dataset.href = dataUrl;
+  });
+  document.getElementById('downloadImgBtn').addEventListener('click', () => {
+    let href = document.getElementById('downloadImgBtn').dataset.href;
+    if (!href) {
+      href = buildReportImage().toDataURL('image/png');
+      document.getElementById('reportImgPreview').src = href;
       document.getElementById('reportImgWrap').style.display = 'block';
-      document.getElementById('downloadImgBtn').dataset.href = dataUrl;
-    });
-    document.getElementById('downloadImgBtn').addEventListener('click', () => {
-      let href = document.getElementById('downloadImgBtn').dataset.href;
-      if (!href) { href = buildReportImage().toDataURL('image/png'); document.getElementById('reportImgPreview').src = href; document.getElementById('reportImgWrap').style.display = 'block'; }
-      const a = document.createElement('a');
-      a.href = href; a.download = 'clickjacking-report.png';
-      document.body.appendChild(a); a.click(); a.remove();
-    });
-    document.getElementById('copySummaryBtn').addEventListener('click', async () => {
-      const md = buildMarkdownReport();
-      const copyBtn = document.getElementById('copySummaryBtn');
-      try {
-        await navigator.clipboard.writeText(md);
-        copyBtn.textContent = '✅ Copied';
-        setTimeout(() => { copyBtn.textContent = '📋 Copy Markdown'; }, 1600);
-      } catch (e) { alert(md); }
-    });
-    document.getElementById('downloadMdBtn').addEventListener('click', () => {
-      downloadBlob('clickjacking-report.md', buildMarkdownReport(), 'text/markdown');
-    });
-  })();
+    }
+    const a = document.createElement('a'); a.href = href; a.download = 'clickjacking-report.png';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  document.getElementById('copySummaryBtn').addEventListener('click', async () => {
+    const md = buildMarkdownReport();
+    const btn = document.getElementById('copySummaryBtn');
+    try { await navigator.clipboard.writeText(md); btn.textContent = '✅ Copied'; setTimeout(() => { btn.textContent = '📋 Copy Markdown'; }, 1600); }
+    catch (e) { alert(md); }
+  });
+  document.getElementById('downloadMdBtn').addEventListener('click', () => downloadBlob('clickjacking-report.md', buildMarkdownReport(), 'text/markdown'));
 
   currentTarget();
   renderReportUI();
