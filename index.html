@@ -161,6 +161,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
       <div class="tech-body">
         <div class="tech-row" id="techMethod">Run a check to see the method used here.</div>
         <div class="tech-row" id="techHeaders"></div>
+        <div class="tech-row" id="techDiag" style="display:none;"></div>
         <pre class="code" id="techCurl" style="display:none;"></pre>
         <label class="proxy-row"><input type="checkbox" id="proxyToggle" checked> Use a public CORS-proxy relay if headers can't be read directly (routes the URL through a third party — turn off for confidential targets; each attempt times out after 4.5s so it can't hang)</label>
       </div>
@@ -231,31 +232,69 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
       .finally(() => clearTimeout(timer));
   }
 
+  function stripFragment(url) {
+    const i = url.indexOf('#');
+    return i === -1 ? url : url.slice(0, i);
+  }
+
+  function describeFailure(e) {
+    if (e && e.name === 'AbortError') return 'timed out';
+    if (e && typeof e.message === 'string' && e.message.startsWith('bad-status-')) return 'HTTP ' + e.message.replace('bad-status-', '');
+    return 'network or CORS error';
+  }
+
   async function tryDirect(target) {
-    const res = await fetchWithTimeout(target, { method: 'HEAD', mode: 'cors' }, DIRECT_TIMEOUT_MS);
-    const found = HEADERS_OF_INTEREST.map(h => [h, res.headers.get(h)]).filter(([, v]) => v);
-    if (found.length) return { state: 'protected', method: 'direct request', found };
-    throw new Error('direct-inconclusive');
+    const clean = stripFragment(target);
+    try {
+      const res = await fetchWithTimeout(clean, { method: 'HEAD', mode: 'cors' }, DIRECT_TIMEOUT_MS);
+      const found = HEADERS_OF_INTEREST.map(h => [h, res.headers.get(h)]).filter(([, v]) => v);
+      if (found.length) return { state: 'protected', method: 'direct request', found };
+      const e = new Error('direct-inconclusive');
+      e.reason = 'connected, but no matching headers were exposed to JS';
+      throw e;
+    } catch (e) {
+      if (!e.reason) e.reason = describeFailure(e);
+      throw e;
+    }
   }
 
   async function tryProxies(target) {
+    const clean = stripFragment(target);
     const attempts = PROXIES.map(p =>
-      fetchWithTimeout(p.build(target), { method: 'GET' }, PROXY_TIMEOUT_MS).then(res => {
+      fetchWithTimeout(p.build(clean), { method: 'GET' }, PROXY_TIMEOUT_MS).then(res => {
         const found = HEADERS_OF_INTEREST.map(h => [h, res.headers.get(h)]).filter(([, v]) => v);
         if (found.length) return { state: 'protected', method: p.name, found };
         if (res.ok) return { state: 'vulnerable', method: p.name, found: [] };
         throw new Error('bad-status-' + res.status);
+      }).catch(e => {
+        const tagged = new Error(e.message);
+        tagged.proxyName = p.name;
+        tagged.reason = describeFailure(e);
+        throw tagged;
       })
     );
-    return Promise.any(attempts);
+    try { return await Promise.any(attempts); }
+    catch (aggErr) {
+      const details = (aggErr.errors || []).map(e => `${e.proxyName || '?'}: ${e.reason || 'unknown error'}`);
+      const err = new Error('all-proxies-failed');
+      err.details = details;
+      throw err;
+    }
   }
 
   async function runHeaderCheck(target, opts) {
-    try { return await tryDirect(target); } catch (e) { /* fall through */ }
+    let directReason = '';
+    try { return await tryDirect(target); }
+    catch (e) { directReason = e.reason || 'network or CORS error'; }
+
     if (opts.onPhase1Miss) opts.onPhase1Miss();
-    if (!opts.proxyEnabled()) return { state: 'inconclusive', method: 'direct request only (proxy disabled)', found: [] };
+    if (!opts.proxyEnabled()) {
+      return { state: 'inconclusive', method: 'direct request only (proxy disabled)', found: [], details: [`direct request: ${directReason}`] };
+    }
     try { return await tryProxies(target); }
-    catch (e) { return { state: 'inconclusive', method: 'automatic checks timed out or failed', found: [] }; }
+    catch (e) {
+      return { state: 'inconclusive', method: 'automatic checks failed', found: [], details: [`direct request: ${directReason}`, ...(e.details || [])] };
+    }
   }
 
   function buildCurlCmd(target) {
@@ -297,7 +336,7 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     } else if (result.state === 'vulnerable') {
       explain = `No X-Frame-Options or Content-Security-Policy frame-ancestors header was found (checked via ${result.method}).`;
     } else {
-      explain = `The browser couldn't read this site's headers directly, and the automatic proxy fallback didn't return a clear answer either. This is common due to CORS restrictions — it doesn't mean the site is vulnerable, just that this couldn't confirm it automatically. Use the curl command in "Technical details" to check yourself, or judge from the live preview below.`;
+      explain = `Neither a direct read nor the proxy fallback could confirm an answer for this site — see the per-attempt breakdown in "Technical details" below for exactly why. This doesn't mean the site is vulnerable, just that automation couldn't confirm it. Use the curl command, or judge from the live preview below.`;
     }
     document.getElementById('explainText').textContent = explain;
 
@@ -317,9 +356,20 @@ pre.code{background:var(--panel-2);border:1px solid var(--line);border-radius:8p
     document.getElementById('techHeaders').innerHTML = result.found.length
       ? `<b>Headers found:</b> ${result.found.map(([k, val]) => `${escapeHtml(k)}: ${escapeHtml(val)}`).join(' · ')}`
       : `<b>Headers found:</b> none`;
+
+    const diagEl = document.getElementById('techDiag');
+    if (result.details && result.details.length) {
+      diagEl.innerHTML = '<b>Why:</b><br>' + result.details.map(d => `&nbsp;&nbsp;• ${escapeHtml(d)}`).join('<br>');
+      diagEl.style.display = 'block';
+    } else {
+      diagEl.style.display = 'none';
+    }
+
     const curlEl = document.getElementById('techCurl');
     curlEl.textContent = buildCurlCmd(target);
     curlEl.style.display = 'block';
+
+    document.getElementById('techDetails').open = (result.state === 'inconclusive');
   }
 
   let decoyEl = null;
